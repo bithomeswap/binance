@@ -11,7 +11,7 @@ on:
   #   - cron:  '0 * * * *'表示每小时 0 分触发一次
   schedule:
   #   - cron:  '0 * * * *'
-    - cron:  '*/30 * * * *'
+    - cron:  '*/1 * * * *'
 permissions:
   contents: read
 
