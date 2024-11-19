@@ -1,3 +1,4 @@
+#每个任务在30秒后，github action自动停止，所以需要定期重启
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
