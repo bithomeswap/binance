@@ -151,10 +151,10 @@ async def main():
                     # thisdf.title#拆解thisdf.title当中（）内的标的，在bitget下对应的订单
             if newsnum==0:
                 print("当前没有新公告")
-            time.sleep(2)
             #休息时间对之前不成交的部分进行撤单处理
         except Exception as e:
             print(e)
+        time.sleep(10)
 
 if __name__ == '__main__':
     # 运行主函数【使用异步可以规避github action的时间限制问题】
