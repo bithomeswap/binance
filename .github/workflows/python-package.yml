@@ -27,5 +27,5 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run
       run: |
-        cd 2022-10/github-actions-python
+        cd actions/github-actions-python
         python main.py
