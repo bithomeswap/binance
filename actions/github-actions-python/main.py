@@ -140,8 +140,8 @@ async def main():
             print(n,df.loc[n])#每一行是index+1
             thisdf=df.loc[n]
             print(thisutc-thisdf.releaseDate)
-            if thisutc-thisdf.releaseDate<=datetime.timedelta(seconds=10*60*60*24*90):#90天
-            # if thisutc-thisdf.releaseDate<=datetime.timedelta(seconds=15):#10秒内持续下买单，每秒都是不成交就按照对手盘一档（滑点百分之一）进行下单
+            # if thisutc-thisdf.releaseDate<=datetime.timedelta(seconds=10*60*60*24*9):#9天
+            if thisutc-thisdf.releaseDate<=datetime.timedelta(seconds=15):#10秒内持续下买单，每秒都是不成交就按照对手盘一档（滑点百分之一）进行下单
                 newsnum+=0#判断是否有新公告，有新公告就执行下单任务
                 print("目标上市公告在10秒内")
                 mes="公告内容："+thisdf.title+"公告时间（标准时）："+thisdf.releaseDate转换后+"当前时间（标准时）："+thisnow
