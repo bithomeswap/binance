@@ -200,10 +200,12 @@ async def main():
               ]#只要上市信息【英文频道】
         df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
         df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
+
+        logger.info(f"df排序前,{df},{type(df)}")
+        df=df.sort_values(by='releaseDate', ascending=False)#releaseDate为datetime形式时，对df根据releaseDate降序排列
+        logger.info(f"df排序后,{df},{type(df)}")
         df=df.reset_index(drop=True)#重置索引避免后面越界
-
-        df=df[df.index==0]#【测试】
-
+        # df=df[df.index==0]#【测试】截取第一行，返回值还是dataframe形式不是字典对象，.iloc截取出来就是对象形式了，.loc不能截取只有一行的情况基本忽略了
         supportdf=df.copy()
         logger.info(f"supportdf,{supportdf},{type(supportdf)}")
 
