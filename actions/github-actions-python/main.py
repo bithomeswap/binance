@@ -520,7 +520,6 @@ async def main():
                 logger.info(f"cance_order,{cance_order}")#撤单成功
 
 
-
 # 【github action能够最大程度避免IP报错】main这个异步函数的作用是处理公告监控问题
 if __name__ == '__main__':
     # 运行主函数【使用异步可以规避github action的时间限制问题】
