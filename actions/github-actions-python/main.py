@@ -207,6 +207,7 @@ async def main():
         newsnum=0
         #如果没符合要求的公告这里整体都不会执行所以这块不需要验证
         for n in range(0,len(df)):
+        # for index,thisdf in df.iterrows():
             thisutc=datetime.datetime.utcnow()
             thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
             logger.info(f"thisnow,{thisnow}")
@@ -359,11 +360,11 @@ async def main():
                 if len(thissupportdf)>0:#如果整体符合要求的公告为空则这里也是空
                     logger.info("当前有新公告验证时间")
                     thisdf=thissupportdf[thissupportdf["releaseDate"]==thissupportdf["releaseDate"].max()]
-                    logger.info(f"只保留releaseDate最大的那一行thisdf,{thisdf}")
+                    thisdf=thisdf.loc[0]
+                    logger.info(f"只保留releaseDate最大的那一行thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
                     thisutc=datetime.datetime.utcnow()
                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
                     logger.info(f"thisnow,{thisnow}")
-                    logger.info(f"thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
                     logger.info(f"当前持仓标的{thissymbol}第{n}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
                     if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                             #【实盘】
