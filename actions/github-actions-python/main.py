@@ -178,7 +178,7 @@ def getsupport(supporttype):
 
 async def main():
     tradenum=0
-    #无论牛市熊市上市币安都是好事：合约上线，现货上市{英文公告叫做list}，但是容量不大{4w美金能打出来60%的滑点}
+    #无论牛市熊市上市币安都是好事：合约上线{英文公告叫做Add}，现货上市{英文公告叫做List}，但是容量不大{4w美金能打出来60%的滑点}
     #香港IP无法访问换成美国或者新加坡的就好，一个IP还有访问次数限制，需要多个ip组合
     while True:
         tradenum+=1
@@ -190,8 +190,14 @@ async def main():
             logger.info(info['catalogName'])#前面是中文的后面是英文的
             if (info['catalogName']=="数字货币及交易对上新")or(info['catalogName']=="New Cryptocurrency Listing"):
                 df=pd.DataFrame(info['articles'])
-        # df=df[df["title"].str.contains("上市")]#只要上市信息【中文频道】
-        df=df[df["title"].str.contains("List")]#只要上市信息【英文频道】
+        # df=df[df["title"].str.contains("上市")
+        #       |
+        #       df["title"].str.contains("上线")
+        #       ]#只要上市信息【中文频道】
+        df=df[df["title"].str.contains("Will List")#上市【退市也有提到List XXX with，意思是去掉相关列表，但是开头是Will End】
+              |
+              df["title"].str.contains("Will Add")#上线
+              ]#只要上市信息【英文频道】
         df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
         df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
         df=df.reset_index(drop=True)#重置索引避免后面越界
@@ -348,25 +354,28 @@ async def main():
             for balance in allbalance:
                 thissymbol=balance["coin"]
                 sellvolume=balance["available"]
-                
-                thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
-                logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
-                if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
+                thissupportdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
+                logger.info(f"thissupportdf,{thissupportdf},{type(thissupportdf)},{str(len(thissupportdf))},{str(thissupportdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
+                if len(thissupportdf)>0:#如果整体符合要求的公告为空则这里也是空
                     logger.info("当前有新公告验证时间")
+                    thissupportdf=thissupportdf[thissupportdf["releaseDate"]==thissupportdf["releaseDate"].max()]
+                    logger.info("只保留releaseDate最大的那一行",thissupportdf)
                     thisutc=datetime.datetime.utcnow()
                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
-                    #这个时间根据持仓的现货去判断
-                    logger.info(f"最后一次与当前持仓标的相关的上币公告的发布时间为{thisutc-thisdf.releaseDate[0]}")
-                    if (thisutc-thisdf.releaseDate[0])<=datetime.timedelta(seconds=
-                                                              #【实盘】
-                                                              60*60*8#8小时【实盘时进行的验证就是8小时】
+                    logger.info(f"thisnow,{thisnow}")
+                    thisdf=thissupportdf.loc[0]#这里只截取了第一行的数据后面才能不截取
+                    logger.info(f"thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
+                    logger.info(f"当前持仓标的{thissymbol}第{n}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                    if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
+                                                            #【实盘】
+                                                            60*60*8#8小时【实盘时进行的验证就是8小时】
 
                                                             # #   #【测试】
                                                             #   60*60*24*19+#19天
                                                             #   60*60*24+#21小时
                                                             #   60*20+#30分钟
                                                             #   50#50秒
-                                                              ):
+                                                            ):
                         logger.info("该标的上市公告结束不足8小时不执行卖出")
                         continue
                     else:
