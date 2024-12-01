@@ -176,11 +176,14 @@ def getsupport(supporttype):
     supportinfo=json.loads(content.text)['appState']['loader']['dataByRouteId']['d9b2']['catalogs']#['dynamicIds']
     return supportinfo
 
-async def main():#bitget交易所的频率限制是根据IP限制的每秒多少次【使用github action之后IP本身是不同的所以很难存在限制频率的问题】
+async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、20次/（UID）
     tradenum=0
     #无论牛市熊市上市币安都是好事：合约上线{英文公告叫做Add}，现货上市{英文公告叫做List}，但是容量不大{4w美金能打出来60%的滑点}
     #香港IP无法访问换成美国或者新加坡的就好，一个IP还有访问次数限制，需要多个ip组合
     while True:
+        #【使用tru、except模式之后代码即便报错也不会导致进程终止】
+        #【多个进程任务同时监控进行交易的情况下一个任务失败了但是没有导致订单错乱，理财申购上其他任务前后脚下出去了但是直接返回下单失败而没有报错】
+        #【while true下下了几百笔金额溢出的失败订单，并没有导致其他模块受限说明频率限制可能不是一个字段超频就会导致整个账户或者IP无法使用】
         tradenum+=1
 
 
