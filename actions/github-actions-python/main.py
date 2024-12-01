@@ -202,7 +202,7 @@ async def main():
         df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
         df=df.reset_index(drop=True)#重置索引避免后面越界
 
-        df=df.iloc[0]#【测试】
+        df=df[df.index==0]#【测试】
 
         supportdf=df.copy()
         logger.info(f"supportdf,{supportdf},{type(supportdf)}")
