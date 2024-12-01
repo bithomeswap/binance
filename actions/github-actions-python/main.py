@@ -208,14 +208,14 @@ async def main():
             logger.info(f"{n},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
             logger.info(f"第{n}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
             if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
-                                                            #   #【实盘】
-                                                            #   30#【实盘时验证公告发布时间不超过15秒】时间内持续下单{对手盘一档溢价百二}
+                                                              #【实盘】
+                                                              30#【实盘时验证公告发布时间不超过30秒】时间内持续下单{对手盘一档溢价百二}
                                                               
-                                                              # #【测试】
-                                                              60*60*24*19+#19天
-                                                              60*60*24+#21小时
-                                                              60*10+#30分钟
-                                                              50#50秒
+                                                            #   # #【测试】
+                                                            #   60*60*24*20+#19天
+                                                            #   60*60*0+#21小时
+                                                            #   60*10+#30分钟
+                                                            #   50#50秒
                                                               ):
                 try:
                     newsnum+=1#判断是否有新公告，有新公告就执行下单任务【+=只要有新公告就不为0了】
@@ -335,9 +335,9 @@ async def main():
                 
                 
 
-                #【推送准备进行的交易记录】
+                #【推送准备进行的交易记录】验证了一下没错恰好是在限制的时间内还在推送公告超时之后就不推送了
                 res=postmessage(mes)
-                # logger.info(res)
+                logger.info("公告推送",res)
                 
         if newsnum==0:
             logger.info("近期无新出上市公告卖出现货申购活期理财产品")
@@ -358,14 +358,14 @@ async def main():
                     #这个时间根据持仓的现货去判断
                     logger.info(f"最后一次与当前持仓标的相关的上币公告的发布时间为{thisutc-thisdf.releaseDate[0]}")
                     if (thisutc-thisdf.releaseDate[0])<=datetime.timedelta(seconds=
-                                                            #   #【实盘】
-                                                            #   60*60*8#8小时【实盘时进行的验证就是8小时】
+                                                              #【实盘】
+                                                              60*60*8#8小时【实盘时进行的验证就是8小时】
 
-                                                            #   #【测试】
-                                                              60*60*24*19+#19天
-                                                              60*60*24+#21小时
-                                                              60*20+#30分钟
-                                                              50#50秒
+                                                            # #   #【测试】
+                                                            #   60*60*24*19+#19天
+                                                            #   60*60*24+#21小时
+                                                            #   60*20+#30分钟
+                                                            #   50#50秒
                                                               ):
                         logger.info("该标的上市公告结束不足8小时不执行卖出")
                         continue
