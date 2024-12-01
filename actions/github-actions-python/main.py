@@ -213,8 +213,8 @@ async def main():
                                                               
                                                               # #【测试】
                                                               60*60*24*19+#19天
-                                                              60*60*23+#21小时
-                                                              60*40+#30分钟
+                                                              60*60*24+#21小时
+                                                              60*10+#30分钟
                                                               50#50秒
                                                               ):
                 try:
@@ -352,6 +352,7 @@ async def main():
                 thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
                 logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
                 if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
+                    logger.info("当前有新公告验证时间")
                     thisutc=datetime.datetime.utcnow()
                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
                     #这个时间根据持仓的现货去判断
@@ -362,8 +363,8 @@ async def main():
 
                                                             #   #【测试】
                                                               60*60*24*19+#19天
-                                                              60*60*23+#21小时
-                                                              60*50+#30分钟
+                                                              60*60*24+#21小时
+                                                              60*20+#30分钟
                                                               50#50秒
                                                               ):
                         logger.info("该标的上市公告结束不足8小时不执行卖出")
