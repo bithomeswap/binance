@@ -201,6 +201,9 @@ async def main():
         df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
         df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
         df=df.reset_index(drop=True)#重置索引避免后面越界
+
+        df=df.iloc[0]#【测试】
+
         supportdf=df.copy()
         logger.info(f"supportdf,{supportdf},{type(supportdf)}")
 
@@ -359,14 +362,14 @@ async def main():
                 if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
                     logger.info("当前有新公告验证时间")
                     thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
-                    logger.info(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")#每一行是index+1
-                    thisdf=thisdf.iloc[0]#
-                    logger.info(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")#每一行是index+1
+                    logger.info(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
+                    thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
+                    logger.info(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
                     thisutc=datetime.datetime.utcnow()
                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
                     logger.info(f"thisnow,{thisnow}")
-                    logger.info(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate[0]}")
-                    if (thisutc-thisdf.releaseDate[0])<=datetime.timedelta(seconds=
+                    logger.info(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                    if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                             #【实盘】
                                                             60*60*8#8小时【实盘时进行的验证就是8小时】
 
