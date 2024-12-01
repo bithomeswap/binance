@@ -206,14 +206,13 @@ async def main():
 
         newsnum=0
         #如果没符合要求的公告这里整体都不会执行所以这块不需要验证
-        for n in range(0,len(df)):
-        # for index,thisdf in df.iterrows():
+        for index in range(0,len(df)):#如果只有一行会不会报错
             thisutc=datetime.datetime.utcnow()
             thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
             logger.info(f"thisnow,{thisnow}")
-            thisdf=df.loc[n]
-            logger.info(f"{n},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
-            logger.info(f"第{n}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+            thisdf=df.iloc[index]
+            logger.info(f"{index},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
+            logger.info(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
             if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                               #【实盘】
                                                               30#【实盘时验证公告发布时间不超过30秒】时间内持续下单{对手盘一档溢价百二}
@@ -355,18 +354,19 @@ async def main():
             for balance in allbalance:
                 thissymbol=balance["coin"]
                 sellvolume=balance["available"]
-                thissupportdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
-                logger.info(f"thissupportdf,{thissupportdf},{type(thissupportdf)},{str(len(thissupportdf))},{str(thissupportdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
-                if len(thissupportdf)>0:#如果整体符合要求的公告为空则这里也是空
+                thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
+                logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
+                if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
                     logger.info("当前有新公告验证时间")
-                    thisdf=thissupportdf[thissupportdf["releaseDate"]==thissupportdf["releaseDate"].max()]
-                    thisdf=thisdf.loc[0]
-                    logger.info(f"只保留releaseDate最大的那一行thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
+                    thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
+                    logger.info(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")#每一行是index+1
+                    thisdf=thisdf.iloc[0]#
+                    logger.info(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")#每一行是index+1
                     thisutc=datetime.datetime.utcnow()
                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
                     logger.info(f"thisnow,{thisnow}")
-                    logger.info(f"当前持仓标的{thissymbol}第{n}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
-                    if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
+                    logger.info(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate[0]}")
+                    if (thisutc-thisdf.releaseDate[0])<=datetime.timedelta(seconds=
                                                             #【实盘】
                                                             60*60*8#8小时【实盘时进行的验证就是8小时】
 
