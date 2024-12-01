@@ -48,7 +48,7 @@ def getspotbalance(coin):
 # logger.info(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
 
 #【获取理财产品列表】这里只要活期存款
-def getsavingslist(coin):
+def getsavingslist(coin):#10次/1s (Uid)
     request_path="/api/v2/earn/savings/product"
     params = {"filter":"all",#筛选条件是否可申购
             # available: 可申购的
@@ -61,7 +61,7 @@ def getsavingslist(coin):
     res=[r for r in res if r["periodType"]=="flexible"]#只要活期存款
     # logger.info(f"res,{type(res)},{res}")
     return res
-# savingslist=getsavingslist(coin="USDT")
+# savingslist=getsavingslist(coin="USDT")#10次/1s (Uid)
 # logger.info(f"savingslist,{savingslist},{type(savingslist)}")
 # usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
 # logger.info(f"usdtproductId,{usdtproductId},{type(usdtproductId)}")
@@ -176,7 +176,7 @@ def getsupport(supporttype):
     supportinfo=json.loads(content.text)['appState']['loader']['dataByRouteId']['d9b2']['catalogs']#['dynamicIds']
     return supportinfo
 
-async def main():
+async def main():#bitget交易所的频率限制是根据IP限制的每秒多少次【使用github action之后IP本身是不同的所以很难存在限制频率的问题】
     tradenum=0
     #无论牛市熊市上市币安都是好事：合约上线{英文公告叫做Add}，现货上市{英文公告叫做List}，但是容量不大{4w美金能打出来60%的滑点}
     #香港IP无法访问换成美国或者新加坡的就好，一个IP还有访问次数限制，需要多个ip组合
@@ -194,7 +194,7 @@ async def main():
         #       |
         #       df["title"].str.contains("上线")
         #       ]#只要上市信息【中文频道】
-        df=df[df["title"].str.contains("Will List")#上市【退市也有提到List XXX with，意思是去掉相关列表，但是开头是Will End】
+        df=df[df["title"].str.contains("Will List")#上市【退市也有提到List XXX with，意思是去掉相关列表，但是下架的英文开头是Will End】
               |
               df["title"].str.contains("Will Add")#上线
               ]#只要上市信息【英文频道】
@@ -244,7 +244,7 @@ async def main():
 
                     logger.info("近期有新出上市公告赎回活期理财产品买入现货")
 
-                    #【理财资产信息】
+                    #【理财资产信息】10次/1s (Uid)
                     request_path="/api/v2/earn/savings/assets"
                     params = {"periodType":"flexible",}#只要活期存款
                     savingsList=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]["resultList"]
@@ -254,7 +254,7 @@ async def main():
                         thisorderId=savings['orderId']
                         thisholdAmount=savings["holdAmount"]
                         logger.info(f"thisproductId,{thisproductId},{type(thisproductId)},thisholdAmount,{thisholdAmount},{type(thisholdAmount)}")
-                        #【赎回理财产品】
+                        #【赎回理财产品】10次/1s (Uid)
                         request_path="/api/v2/earn/savings/redeem"
                         params = {"productId":thisproductId,
                                 "orderId":thisorderId,
@@ -270,7 +270,7 @@ async def main():
                     usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
                     logger.info(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
                     if float(usdtbalance)>0:#只在有余额的情况下交易
-                        #【交易精度】
+                        #【交易精度】#20次/1s (IP)
                         params={"symbol":thissymbol+"USDT"}
                         request_path="/api/v2/spot/public/symbols"
                         thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
@@ -282,7 +282,7 @@ async def main():
                         logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
                         # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
                         
-                        #【盘口深度】
+                        #【盘口深度】#20次/1s (IP)
                         params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
                         request_path="/api/v2/spot/market/orderbook"
                         thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
@@ -319,7 +319,8 @@ async def main():
                         else:
                             logger.info("目标下单金额正常")
                         if buyvolume>0:#有余额才下单的
-                            #【现货下单】symbol, quantity, side, orderType, force, price='', clientOrderId=None)
+                            #【现货下单】#10次/1s (UID)
+                            # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
                             params={
                                 "symbol":str(thissymbol+"USDT"),#"SBTCSUSDT_SUMCBL"
                                 "side":"buy",#方向：PS_BUY现货买入，PS_SELL现货卖出
@@ -388,7 +389,7 @@ async def main():
                 else:
                     logger.info("当前没有新公告直接卖出")
             
-                #【交易精度】
+                #【交易精度】#20次/1s (IP)
                 params={"symbol":thissymbol+"USDT"}
                 request_path="/api/v2/spot/public/symbols"
                 thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
@@ -418,7 +419,7 @@ async def main():
                 else:
                     logger.info("目标下单金额正常")
 
-                # 【盘口深度】
+                # 【盘口深度】#20次/1s (IP)
                 params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
                 request_path="/api/v2/spot/market/orderbook"
                 thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
@@ -438,7 +439,8 @@ async def main():
                 sellprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
                 logger.info(f"sellvolume,{sellvolume}")
                 if sellvolume>0:#有余额才下单的
-                    #【现货下单】symbol, quantity, side, orderType, force, price='', clientOrderId=None)
+                    #【现货下单】#10次/1s (UID)
+                    # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
                     params={
                         "symbol":str(thissymbol+"USDT"),#"SBTCSUSDT_SUMCBL"
                         "side":"sell",#方向：PS_BUY现货买入，PS_SELL现货卖出
@@ -467,12 +469,12 @@ async def main():
             logger.info(f"{usdtbalance},{type(usdtbalance)}")
             if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
                 logger.info("余额大于1USDT执行理财申购")
-                #【获取理财产品列表】
+                #【获取理财产品列表】#10次/1s (Uid)
                 savingslist=getsavingslist(coin="USDT")
                 logger.info(f"{savingslist},{type(savingslist)}")
                 usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
                 logger.info(f"{usdtproductId},{type(usdtproductId)}")
-                #【申购理财产品】
+                #【申购理财产品】10次/1s (Uid)
                 request_path="/api/v2/earn/savings/subscribe"
                 params = {"productId":usdtproductId,
                         "periodType":"flexible",#只要活期存款
@@ -489,12 +491,12 @@ async def main():
         #【下单3秒不成交就执行超时撤单】
         thistime=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
         logger.info(f"thistime,{thistime}")
-        # #【获取全部订单】
+        # #【获取全部订单】#10次/1s (UID)
         # params={}
         # request_path="/api/v2/spot/trade/history-orders"
         # all_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
         # logger.info(f"all_orders,{all_orders}")
-        #【获取未成交订单】
+        #【获取未成交订单】#10次/1s (UID)
         params={}
         request_path="/api/v2/spot/trade/unfilled-orders"
         open_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
@@ -511,7 +513,7 @@ async def main():
             logger.info(f"{thistime-thisdt}")
             if thistime-thisdt>=datetime.timedelta(seconds=3):
                 logger.info("该订单挂起超时执行撤单")
-                #【现货撤单】
+                #【现货撤单】#10次/1s (UID)
                 params={"symbol":thissymbol,
                         "orderId":thisorderId,
                         }
