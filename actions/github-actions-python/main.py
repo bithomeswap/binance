@@ -230,6 +230,12 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 thisdf=df.iloc[index]
                 logger.info(f"{index},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
                 logger.info(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                
+                # # 正则表达式匹配括号内的内容【识别代币名称】1个币2个币都是返回一个列表可以这样操作
+                # pattern=r'\(([^)]+)\)'
+                # matches=re.findall(pattern,thisdf.title)# 使用findall方法查找所有匹配的内容
+                # logger.info(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
+
                 if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                                 #【实盘】
                                                                 30#【实盘时验证公告发布时间不超过30秒】时间内持续下单{对手盘一档溢价百二}
@@ -243,10 +249,12 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     try:
                         newsnum+=1#判断是否有新公告，有新公告就执行下单任务【+=只要有新公告就不为0了】
                         logger.info("目标上市公告刚刚发布")
+
                         # 正则表达式匹配括号内的内容【识别代币名称】
                         pattern=r'\(([^)]+)\)'
                         matches=re.findall(pattern,thisdf.title)# 使用findall方法查找所有匹配的内容
                         logger.info(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
+                        
                         #存储需要发送的消息的内容【避免后面导致内容变更】
                         mes="公告内容："+thisdf.title+"标的名称："+str(matches)+"公告时间（标准时）："+thisdf.releaseDate标准时+"当前时间（标准时）："+thisnow
                         
@@ -502,7 +510,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             else:
                 logger.info(f"余额不足不进行申购")
         except Exception as e:
-            logger.info("根据公告信息买入报错",e)
+            logger.info("根据公告信息卖出报错",e)
 
 
 
