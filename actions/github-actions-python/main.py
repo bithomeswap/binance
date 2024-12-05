@@ -285,7 +285,9 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             res=client._request_with_params(params=params,request_path=request_path,method="POST")
                             res=res["data"]
                             logger.info(f"赎回理财产品,{res}")
-
+                    except Exception as e:
+                        logger.info(f"{thissymbol}理财赎回报错{e}")
+                    try:
                         #【查询现货USDT余额】这里再对比一下最大下单金额
                         spotbalance=getspotbalance(coin="USDT")
                         usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
@@ -371,7 +373,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     res=postmessage(mes)
                     logger.info("公告推送",res)
         except Exception as e:
-            logger.info(f"根据公告信息买入报错,{e}")
+            logger.info(f"公告买入模块整体报错,{e}")
 
 
      
