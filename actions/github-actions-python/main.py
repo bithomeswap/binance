@@ -216,7 +216,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             supportdf=df.copy()
             logger.info(f"supportdf,{supportdf},{type(supportdf)}")
         except Exception as e:
-            logger.info("公告获取报错",e)
+            logger.info(f"公告获取报错,{e}")
 
 
 
@@ -371,7 +371,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     res=postmessage(mes)
                     logger.info("公告推送",res)
         except Exception as e:
-            logger.info("根据公告信息买入报错",e)
+            logger.info(f"根据公告信息买入报错,{e}")
 
 
 
@@ -385,7 +385,9 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 for balance in allbalance:
                     thissymbol=balance["coin"]
                     sellvolume=balance["available"]
+                    #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
                     thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
+                    
                     logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
                     if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
                         logger.info("当前有新公告验证时间")
@@ -510,7 +512,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             else:
                 logger.info(f"余额不足不进行申购")
         except Exception as e:
-            logger.info("根据公告信息卖出报错",e)
+            logger.info(f"根据公告信息卖出报错,{e}")
 
 
 
