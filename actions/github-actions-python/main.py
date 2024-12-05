@@ -187,7 +187,8 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
         tradenum+=1
 
 
-
+        #【第一部分】抓公告这个3秒一次貌似不受影响可以一直抓取【3个服务器同时抓一直抓了3天都没事】
+        #【第三部分】没新出的公告就卖出闲置资产同时存理财账户【这里需要把没有的兑换成BGB并且转移到资金账户上避免频繁失败导致报错，之前估计就是BGB报错导致整体停滞】
         try:
             logger.info(f"当前交易轮次为{tradenum}")
 
@@ -363,8 +364,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                 thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
                                 logger.info(f"{thisorder}")
                     except Exception as e:
-                        logger.info(e)
-                    
+                        logger.info(f"{thissymbol}公告买入报错{e}")
                     
 
                     #【推送准备进行的交易记录】验证了一下没错恰好是在限制的时间内还在推送公告超时之后就不推送了
@@ -374,145 +374,150 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             logger.info(f"根据公告信息买入报错,{e}")
 
 
-
-        try:
-            if newsnum==0:
-                logger.info("近期无新出上市公告卖出现货申购活期理财产品")
-                # 【查询现货非USDT余额】
+     
+        if newsnum==0:
+            logger.info("近期无新出上市公告卖出现货申购活期理财产品")
+            try:
+                # 【查询现货非USDT余额】之前报错是现货闲置的BGB一直卖出失败导致后续无法执行
                 spotbalance=getspotbalance(coin="")
                 allbalance=[balance for balance in spotbalance if balance["coin"]!="USDT"]
                 logger.info(f"allbalance,{allbalance},{type(allbalance)}")
                 for balance in allbalance:
-                    thissymbol=balance["coin"]
-                    sellvolume=balance["available"]
-                    #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
-                    thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
-                    
-                    logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
-                    if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
-                        logger.info("当前有新公告验证时间")
-                        thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
-                        logger.info(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
-                        thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
-                        logger.info(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
-                        thisutc=datetime.datetime.utcnow()
-                        thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
-                        logger.info(f"thisnow,{thisnow}")
-                        logger.info(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
-                        if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
-                                                                #【实盘】
-                                                                60*60*8#8小时【实盘时进行的验证就是8小时】
+                    try:
+                        thissymbol=balance["coin"]
+                        sellvolume=balance["available"]
+                        #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
+                        thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
+                        
+                        logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
+                        if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
+                            logger.info("当前有新公告验证时间")
+                            thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
+                            logger.info(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
+                            thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
+                            logger.info(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
+                            thisutc=datetime.datetime.utcnow()
+                            thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
+                            logger.info(f"thisnow,{thisnow}")
+                            logger.info(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                            if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
+                                                                    #【实盘】
+                                                                    60*60*8#8小时【实盘时进行的验证就是8小时】
 
-                                                                # #   #【测试】
-                                                                #   60*60*24*19+#19天
-                                                                #   60*60*24+#21小时
-                                                                #   60*20+#30分钟
-                                                                #   50#50秒
-                                                                ):
-                            logger.info("该标的上市公告结束不足8小时不执行卖出")
-                            continue
+                                                                    # #   #【测试】
+                                                                    #   60*60*24*19+#19天
+                                                                    #   60*60*24+#21小时
+                                                                    #   60*20+#30分钟
+                                                                    #   50#50秒
+                                                                    ):
+                                logger.info("该标的上市公告结束不足8小时不执行卖出")
+                                continue
+                            else:
+                                logger.info("该标的上市公告结束较长时间直接卖出")
                         else:
-                            logger.info("该标的上市公告结束较长时间直接卖出")
-                    else:
-                        logger.info("当前没有新公告直接卖出")
-                
-                    #【交易精度】#20次/1s (IP)
-                    params={"symbol":thissymbol+"USDT"}
-                    request_path="/api/v2/spot/public/symbols"
-                    thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                    logger.info(f"{thisinfo}")
-                    minTradeAmount=int(thisinfo[0]["minTradeAmount"])#最小交易数量
-                    maxTradeAmount=int(thisinfo[0]["maxTradeAmount"])#最大交易数量
-                    quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
-                    pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
-                    logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
-                    # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
-                    
+                            logger.info("当前没有新公告直接卖出")
+                        #【交易精度】#20次/1s (IP)
+                        params={"symbol":thissymbol+"USDT"}
+                        request_path="/api/v2/spot/public/symbols"
+                        thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                        logger.info(f"{thisinfo}")
+                        minTradeAmount=int(thisinfo[0]["minTradeAmount"])#最小交易数量
+                        maxTradeAmount=int(thisinfo[0]["maxTradeAmount"])#最大交易数量
+                        quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
+                        pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
+                        logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
+                        # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
+                        
 
-                    sellvolume=round(math.floor(float(sellvolume)*(10**quantityPrecision))/(10**quantityPrecision),
-                                    quantityPrecision)#为防止余额不足需要先乘后除再取位数
-                    logger.info(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
-                    #目标下单金额跟最大最小下单金额对比
-                    if sellvolume>float(maxTradeAmount):
-                        sellvolume=round(maxTradeAmount,
-                                        quantityPrecision)
-                        logger.info("目标下单金额大于最大下单金额")
-                    else:
-                        logger.info("目标下单金额正常")
-                    if sellvolume<float(minTradeAmount):
-                        sellvolume=round(minTradeAmount,
-                                        quantityPrecision)
-                        logger.info("目标下单金额大于最大下单金额")
-                    else:
-                        logger.info("目标下单金额正常")
+                        sellvolume=round(math.floor(float(sellvolume)*(10**quantityPrecision))/(10**quantityPrecision),
+                                        quantityPrecision)#为防止余额不足需要先乘后除再取位数
+                        logger.info(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
+                        #目标下单金额跟最大最小下单金额对比
+                        if sellvolume>float(maxTradeAmount):
+                            sellvolume=round(maxTradeAmount,
+                                            quantityPrecision)
+                            logger.info("目标下单金额大于最大下单金额")
+                        else:
+                            logger.info("目标下单金额正常")
+                        if sellvolume<float(minTradeAmount):
+                            sellvolume=round(minTradeAmount,
+                                            quantityPrecision)
+                            logger.info("目标下单金额大于最大下单金额")
+                        else:
+                            logger.info("目标下单金额正常")
 
-                    # 【盘口深度】#20次/1s (IP)
-                    params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
-                    request_path="/api/v2/spot/market/orderbook"
-                    thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                    # logger.info(thisdepth)
-                    bid1=thisdepth["bids"][0][0]#买一
-                    bid1v=thisdepth["bids"][0][1]
-                    ask1=thisdepth["asks"][0][0]#卖一
-                    ask1v=thisdepth["asks"][0][1]
-                    logger.info(f"""
-                        {bid1},{type(bid1)},bid1
-                        {bid1v},{type(bid1v)},bid1v
-                        {ask1},{type(ask1)},ask1
-                        {ask1v},{type(ask1v)},ask1v
-                        """
-                        )
-                    
-                    sellprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
-                    logger.info(f"sellvolume,{sellvolume}")
-                    if sellvolume>0:#有余额才下单的
-                        #【现货下单】#10次/1s (UID)
-                        # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
-                        params={
-                            "symbol":str(thissymbol+"USDT"),#"SBTCSUSDT_SUMCBL"
-                            "side":"sell",#方向：PS_BUY现货买入，PS_SELL现货卖出
+                        # 【盘口深度】#20次/1s (IP)
+                        params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
+                        request_path="/api/v2/spot/market/orderbook"
+                        thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                        # logger.info(thisdepth)
+                        bid1=thisdepth["bids"][0][0]#买一
+                        bid1v=thisdepth["bids"][0][1]
+                        ask1=thisdepth["asks"][0][0]#卖一
+                        ask1v=thisdepth["asks"][0][1]
+                        logger.info(f"""
+                            {bid1},{type(bid1)},bid1
+                            {bid1v},{type(bid1v)},bid1v
+                            {ask1},{type(ask1)},ask1
+                            {ask1v},{type(ask1v)},ask1v
+                            """
+                            )
+                        
+                        sellprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
+                        logger.info(f"sellvolume,{sellvolume}")
+                        if sellvolume>0:#有余额才下单的
+                            #【现货下单】#10次/1s (UID)
+                            # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
+                            params={
+                                "symbol":str(thissymbol+"USDT"),#"SBTCSUSDT_SUMCBL"
+                                "side":"sell",#方向：PS_BUY现货买入，PS_SELL现货卖出
 
-                            #【限价单】
-                            "orderType":"limit",#订单类型"limit"、"market"
-                            "price":str(sellprice),#限价价格# 价格小数位、价格步长可以通过获取交易对信息接口获取
-                            "size":str(sellvolume),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
-                            
-                            #【市价单】判断剧烈行情是否一定能够成交
-                            # "orderType":"market",#订单类型"limit"、"market"
-                            # "size":str(buyusdt),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
-                            
-                            "force":"gtc",#执行策略（orderType为market时无效）# gtc：普通限价单，一直有效直至取消# post_only：只做 maker 订单# fok：全部成交或立即取消# ioc：立即成交并取消剩余
-                            # "clientOrderId":str(random_string("Cuongitl"))#自定义订单ID
-                            "tpslType":"normal",# normal：普通单（默认值）# tpsl：止盈止损单
-                        }
-                        request_path="/api/v2/spot/trade/place-order"
-                        #最小下单金额为1USDT
-                        thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
-                        logger.info(f"{thisorder}")
-            #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
-            spotbalance=getspotbalance(coin="USDT")
-            usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-            logger.info(f"{usdtbalance},{type(usdtbalance)}")
-            if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
-                logger.info("余额大于1USDT执行理财申购")
-                #【获取理财产品列表】#10次/1s (Uid)
-                savingslist=getsavingslist(coin="USDT")
-                logger.info(f"{savingslist},{type(savingslist)}")
-                usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
-                logger.info(f"{usdtproductId},{type(usdtproductId)}")
-                #【申购理财产品】10次/1s (Uid)
-                request_path="/api/v2/earn/savings/subscribe"
-                params = {"productId":usdtproductId,
-                        "periodType":"flexible",#只要活期存款
-                        "amount":usdtbalance
-                        }
-                res=client._request_with_params(params=params,request_path=request_path,method="POST")
-                res=res["data"]
-                logger.info(f"申购理财产品,{res}")
-            else:
-                logger.info(f"余额不足不进行申购")
-        except Exception as e:
-            logger.info(f"根据公告信息卖出报错,{e}")
+                                #【限价单】
+                                "orderType":"limit",#订单类型"limit"、"market"
+                                "price":str(sellprice),#限价价格# 价格小数位、价格步长可以通过获取交易对信息接口获取
+                                "size":str(sellvolume),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
+                                
+                                #【市价单】判断剧烈行情是否一定能够成交
+                                # "orderType":"market",#订单类型"limit"、"market"
+                                # "size":str(buyusdt),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
+                                
+                                "force":"gtc",#执行策略（orderType为market时无效）# gtc：普通限价单，一直有效直至取消# post_only：只做 maker 订单# fok：全部成交或立即取消# ioc：立即成交并取消剩余
+                                # "clientOrderId":str(random_string("Cuongitl"))#自定义订单ID
+                                "tpslType":"normal",# normal：普通单（默认值）# tpsl：止盈止损单
+                            }
+                            request_path="/api/v2/spot/trade/place-order"
+                            #最小下单金额为1USDT
+                            thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
+                            logger.info(f"{thisorder}")
+                    except Exception as e:
+                        logger.info(f"{balance}公告卖出报错{e}")
+            except Exception as e:
+                logger.info(f"公告卖出整体模块报错{e}")
+            try:
+                #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
+                spotbalance=getspotbalance(coin="USDT")
+                usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
+                logger.info(f"{usdtbalance},{type(usdtbalance)}")
+                if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
+                    logger.info("余额大于1USDT执行理财申购")
+                    #【获取理财产品列表】#10次/1s (Uid)
+                    savingslist=getsavingslist(coin="USDT")
+                    logger.info(f"{savingslist},{type(savingslist)}")
+                    usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
+                    logger.info(f"{usdtproductId},{type(usdtproductId)}")
+                    #【申购理财产品】10次/1s (Uid)
+                    request_path="/api/v2/earn/savings/subscribe"
+                    params = {"productId":usdtproductId,
+                            "periodType":"flexible",#只要活期存款
+                            "amount":usdtbalance
+                            }
+                    res=client._request_with_params(params=params,request_path=request_path,method="POST")
+                    res=res["data"]
+                    logger.info(f"申购理财产品,{res}")
+                else:
+                    logger.info(f"余额不足不进行申购")
+            except Exception as e:
+                logger.info(f"闲置资金活期理财报错,{e}")
 
 
 
