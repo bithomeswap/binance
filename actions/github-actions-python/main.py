@@ -372,7 +372,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     res=postmessage(mes)
                     logger.info("公告推送",res)
                 except Exception as e:
-                    logger.info(f"{thissymbol}公告理财赎回买入报错组合模块报错{e}")
+                    logger.info(f"公告理财赎回买入报错组合模块报错{e}")
         except Exception as e:
             logger.info(f"公告买入模块整体报错,{e}")
 
