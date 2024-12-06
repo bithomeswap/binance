@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ "main" ]
   # 【定时任务】Cron 表达式 0 * * * * 表示每小时 0 分触发一次。参考 Cron Guru。
-  schedule: 
+  schedule:
     #此示例在每天 0:30\8:30\16:30[UTC] 触发工作流程
     # - cron:  '30 0,8,16 * * *'
     - cron:  '30 0,4,8,12,16,20 * * *'
