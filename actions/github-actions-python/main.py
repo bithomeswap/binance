@@ -212,7 +212,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             df=pd.DataFrame({})
             for article in articles:
                 df=pd.concat([df,pd.DataFrame(article)])
-            print("df",df)
+            print("全部公告",df)
 
             # #【中文公告筛选】
             # # df=df[df["title"].str.contains("上市")
@@ -225,14 +225,34 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 df["title"].str.contains("Will Add")#上线
                 ]#只要上市信息【英文频道】
             
+            #【正则表达式匹配代币名称】1个币2个币都是返回一个列表
+            pattern=r'\(([^)]+)\)'#正则表达式【用来从公告中过滤目标代币】
+            df["token"]=df["title"].apply(lambda x:re.findall(pattern,x))#使用findall方法查找所有匹配的内容
+
+
+            #【同一个代币只要最开始上线的那一次才有利润】
             df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
             df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
+            
+            #【对token列值相同的数据只保留releaseDate列值最小的行】
+            # df.to_csv('df过滤前.csv')
+            df=df.explode('token')#把一行公告拆分成多行方便选中和下单
+            # df.to_csv('df过滤中.csv')
+            df=df.groupby('token', as_index=False).apply(lambda x: x.nsmallest(1,'releaseDate'))
+            print(f"对关联代币进行去重后{df}")
 
-            print(f"df排序前,{df},{type(df)}")
+            #【根据时间降序排列】
+            print(f"目标公告排序前,{df},{type(df)}")
             df=df.sort_values(by='releaseDate',ascending=False)#releaseDate为datetime形式时进行排序，ascending=True是升序排列，ascending=False是降序排列，本身就是降序，暂时没问题的
-            print(f"df排序后,{df},{type(df)}")
-            df=df.reset_index(drop=True)#重置索引避免后面越界
-            # df=df[df.index==0]#【测试】截取第一行，返回值还是dataframe形式不是字典对象，.iloc截取出来就是对象形式了，.loc不能截取只有一行的情况基本忽略了
+            print(f"目标公告排序后,{df},{type(df)}")
+            #【重置索引避免后面越界】
+            df=df.reset_index(drop=True)
+
+            #【测试】截取第一行，返回值还是dataframe形式不是字典对象，.iloc截取出来就是对象形式了，.loc不能截取只有一行的情况基本忽略了
+            # df=df[df.index==0]
+
+            #【存储supportdf】
+            df.to_csv('df.csv')
             supportdf=df.copy()
             print(f"supportdf,{supportdf},{type(supportdf)}")
         except Exception as e:
@@ -240,8 +260,8 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
 
 
 
+        newsnum=0
         try:
-            newsnum=0
             #如果没符合要求的公告这里整体都不会执行所以这块不需要验证
             for index in range(0,len(df)):#如果只有一行会不会报错
                 try:
@@ -252,11 +272,9 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     print(f"{index},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
                     print(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
                     
-                    # # 正则表达式匹配括号内的内容【识别代币名称】1个币2个币都是返回一个列表可以这样操作
-                    # pattern=r'\(([^)]+)\)'
-                    # matches=re.findall(pattern,thisdf.title)# 使用findall方法查找所有匹配的内容
-                    # print(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
-
+                    print('thisdf["token"]',thisdf["token"],type(thisdf["token"]))#无论几个币类型都是列表
+                    # thissymbol=thisdf["token"]
+                    # print(f"新上市标的为,{thissymbol},{type(thissymbol)}")
                     if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                                     #【实盘】
                                                                     30#【实盘时验证公告发布时间不超过30秒】时间内持续下单{对手盘一档溢价百二}
@@ -271,18 +289,12 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             newsnum+=1#判断是否有新公告，有新公告就执行下单任务【+=只要有新公告就不为0了】
                             print("目标上市公告刚刚发布")
 
-                            # 正则表达式匹配括号内的内容【识别代币名称】
-                            pattern=r'\(([^)]+)\)'
-                            matches=re.findall(pattern,thisdf.title)# 使用findall方法查找所有匹配的内容
-                            print(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
-                            
-                            #存储需要发送的消息的内容【避免后面导致内容变更】
-                            mes="公告内容："+thisdf.title+"标的名称："+str(matches)+"公告时间（标准时）："+thisdf.releaseDate标准时+"当前时间（标准时）："+thisnow
-                            
-                            #截取公告里面第一个标的作为买入目标
-                            thissymbol=matches[0]
+                            thissymbol=thisdf["token"]
                             print(f"新上市标的为,{thissymbol}")
 
+                            #存储需要发送的消息的内容【避免后面导致内容变更】
+                            mes="公告内容："+thisdf.title+"标的列表："+str(thissymbol)+"公告时间（标准时）："+thisdf.releaseDate标准时+"当前时间（标准时）："+thisnow
+                            
                             print("近期有新出上市公告赎回活期理财产品买入现货")
 
                             #【理财资产信息】10次/1s (Uid)
@@ -313,6 +325,11 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
                             print(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
                             if float(usdtbalance)>0:#只在有余额的情况下交易
+                                tradeusdt=float(usdtbalance)
+                                maxusdtbalance=20000#设置单次打新最大的单笔下单金额【余额过多则分多次下单】
+                                if float(usdtbalance)>maxusdtbalance:
+                                    print(f"USDT余额大于{maxusdtbalance}重置下单金额为{maxusdtbalance}")
+                                    tradeusdt=float(maxusdtbalance)
                                 #【交易精度】#20次/1s (IP)
                                 params={"symbol":thissymbol+"USDT"}
                                 request_path="/api/v2/spot/public/symbols"
@@ -345,7 +362,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                 #【计算】buyprice和buyvolume
                                 buyprice=round(float(ask1)*(1+0.02),
                                                 pricePrecision)#对手盘一档上浮百分之二避免无法成交，之后保留pricePrecision位小数
-                                buyvolume=round(math.floor(float(usdtbalance)/buyprice*(10**quantityPrecision))/(10**quantityPrecision),
+                                buyvolume=round(math.floor(float(tradeusdt)/buyprice*(10**quantityPrecision))/(10**quantityPrecision),
                                                 quantityPrecision)#quantityPrecision代表代币精度
                                 print(f"buyprice,{buyprice},buyvolume,{buyvolume}")
                                 #目标下单金额跟最大最小下单金额对比
@@ -396,15 +413,16 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             print(f"公告买入模块整体报错,{e}")
 
 
-     
+        print("newsnum",newsnum)
         if newsnum==0:
             print("近期无新出上市公告卖出现货申购活期理财产品")
             try:
-                # 【查询现货非USDT余额】之前报错是现货闲置的BGB一直卖出失败导致后续无法执行
+                #【查询现货非USDT余额】之前报错是现货闲置的BGB一直卖出失败导致后续无法执行
                 spotbalance=getspotbalance(coin="")
                 allbalance=[balance for balance in spotbalance if balance["coin"]!="USDT"]#只卖出非USDT的现货代币
                 print(f"allbalance,{allbalance},{type(allbalance)}")
                 for balance in allbalance:
+                    print("balance",balance)
                     try:
                         thissymbol=balance["coin"]
                         sellvolume=balance["available"]
@@ -543,10 +561,9 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
 
 
 
-        try:
-            #【休息3秒】会不会因为休息时间短速度过快限制IP
-            time.sleep(3)
-            #【下单3秒不成交就执行超时撤单】
+        try:#真正的交易机会就很短时间休息久了容易错过机会
+            #【休息1秒】会不会因为休息时间短速度过快限制IP
+            time.sleep(1)
             thistime=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
             print(f"thistime,{thistime}")
             # #【获取全部订单】#10次/1s (UID)
