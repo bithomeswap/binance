@@ -334,7 +334,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                 bid1v=thisdepth["bids"][0][1]
                                 ask1=thisdepth["asks"][0][0]#卖一
                                 ask1v=thisdepth["asks"][0][1]
-                                print(f"""
+                                print(f"""买入
                                     {bid1},{type(bid1)},bid1
                                     {bid1v},{type(bid1v)},bid1v
                                     {ask1},{type(ask1)},ask1
@@ -477,7 +477,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         bid1v=thisdepth["bids"][0][1]
                         ask1=thisdepth["asks"][0][0]#卖一
                         ask1v=thisdepth["asks"][0][1]
-                        print(f"""
+                        print(f"""卖出
                             {bid1},{type(bid1)},bid1
                             {bid1v},{type(bid1v)},bid1v
                             {ask1},{type(ask1)},ask1
