@@ -11,22 +11,24 @@ import json
 import time
 import datetime
 
+# 【acx】没监控到【应该是时间转换报错了但是报错信息变成前面的路径了】
+
 # pip install python-bitget
 # 【参考文档】https://bitgetlimited.github.io/apidoc/en/mix/#get-account-list
 from pybitget import Client
 from pybitget.utils import *
 from pybitget.enums import *
-from pybitget import logger
+# from pybitget import logger
 
-logger.add(
-    sink=f"log.log",#sink:创建日志文件的路径。
-    level="INFO",#level:记录日志的等级,低于这个等级的日志不会被记录。等级顺序为 debug < info < warning < error。设置 INFO 会让 logger.debug 的输出信息不被写入磁盘。
-    rotation="00:00",#rotation:轮换策略,此处代表每天凌晨创建新的日志文件进行日志 IO；也可以通过设置 "2 MB" 来指定 日志文件达到 2 MB 时进行轮换。   
-    retention="7 days",#retention:只保留 7 天。 
-    encoding="utf-8",#encoding:编码方式
-    enqueue=True,#enqueue:队列 IO 模式,此模式下日志 IO 不会影响 python 主进程,建议开启。
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"#format:定义日志字符串的样式,这个应该都能看懂。
-)
+# logger.add(
+#     sink=f"log.log",#sink:创建日志文件的路径。
+#     level="INFO",#level:记录日志的等级,低于这个等级的日志不会被记录。等级顺序为 debug < info < warning < error。设置 INFO 会让 logger.debug 的输出信息不被写入磁盘。
+#     rotation="00:00",#rotation:轮换策略,此处代表每天凌晨创建新的日志文件进行日志 IO；也可以通过设置 "2 MB" 来指定 日志文件达到 2 MB 时进行轮换。   
+#     retention="7 days",#retention:只保留 7 天。 
+#     encoding="utf-8",#encoding:编码方式
+#     enqueue=True,#enqueue:队列 IO 模式,此模式下日志 IO 不会影响 python 主进程,建议开启。
+#     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"#format:定义日志字符串的样式,这个应该都能看懂。
+# )
 
 import math
 #【bitget理财大概一个小时一结算利息】
@@ -41,11 +43,11 @@ def getspotbalance(coin):
     request_path="/api/v2/spot/account/assets"
     params = {"coin":coin}
     res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
-    # logger.info(f"res,{type(res)},{res}")
+    # print(f"res,{type(res)},{res}")
     return res
 # spotbalance=getspotbalance(coin="USDT")
 # usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-# logger.info(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
+# print(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
 
 #【获取理财产品列表】这里只要活期存款
 def getsavingslist(coin):#10次/1s (Uid)
@@ -59,12 +61,12 @@ def getsavingslist(coin):#10次/1s (Uid)
             }
     res=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
     res=[r for r in res if r["periodType"]=="flexible"]#只要活期存款
-    # logger.info(f"res,{type(res)},{res}")
+    # print(f"res,{type(res)},{res}")
     return res
 # savingslist=getsavingslist(coin="USDT")#10次/1s (Uid)
-# logger.info(f"savingslist,{savingslist},{type(savingslist)}")
+# print(f"savingslist,{savingslist},{type(savingslist)}")
 # usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
-# logger.info(f"usdtproductId,{usdtproductId},{type(usdtproductId)}")
+# print(f"usdtproductId,{usdtproductId},{type(usdtproductId)}")
 
 def postmessage(text):
     BASEURL = 'http://wxpusher.zjiecode.com/api'
@@ -76,13 +78,13 @@ def postmessage(text):
         'pageSize': "50",
     }
     query_user=requests.get(url=f'{BASEURL}/fun/wxuser', params=payload).json()
-    # logger.info(f"{query_user}")
+    # print(f"{query_user}")
     uidslist=[]
     if len(query_user["data"]["records"])>0:
         for query in query_user["data"]["records"]:
-            logger.info(query["uid"])
+            print(query["uid"])
             uidslist.append(query["uid"])
-    # logger.info(f"{uidslist}")
+    # print(f"{uidslist}")
     #【推送消息】
     payload = {
         'appToken': "AT_tFRZgjToc6XnG5dzR2MGyv1DzECNYOIU",
@@ -116,8 +118,8 @@ def getsupport(supporttype):
             "hl": "zh-CN"
         }
         response = requests.get(url, headers=headers, params=params)
-        # logger.info(f"{response.text}")
-        # logger.info(f"{response}")
+        # print(f"{response.text}")
+        # print(f"{response}")
     if supporttype=="英文公告":
         #【英文公告】{币安英文区公告的上线时间更早一些尽量监控英文区}
         headers = {
@@ -165,15 +167,15 @@ def getsupport(supporttype):
             "hl": "en"
         }
         response = requests.get(url, headers=headers, cookies=cookies, params=params)
-        # logger.info(f"{response.text}")
-        # logger.info(f"{response}")
+        # print(f"{response.text}")
+        # print(f"{response}")
 
     soup = BeautifulSoup(response.text,'html.parser')# 使用BeautifulSoup解析响应内容
     content = soup.body# 提取body标签内容下的script
     content = content.find('script', id='__APP_DATA')# 提取<body>标签下的<script>标签
-    # logger.info(f"{content}")
-    # logger.info(f"{content.text},{type(content.text)}")#取目标标签的值
-    supportinfo=json.loads(content.text)['appState']['loader']['dataByRouteId']['d9b2']['catalogs']#['dynamicIds']
+    # print(f"{content}")
+    # print(f"{content.text},{type(content.text)}")#取目标标签的值
+    supportinfo=json.loads(content.text)['appState']['loader']['dataByRouteId']
     return supportinfo
 
 async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、20次/（UID）
@@ -186,38 +188,55 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
         #【while true下下了几百笔金额溢出的失败订单，并没有导致其他模块受限说明频率限制可能不是一个字段超频就会导致整个账户或者IP无法使用】
         tradenum+=1
 
-
         #【第一部分】抓公告这个3秒一次貌似不受影响可以一直抓取【3个服务器同时抓一直抓了3天都没事】
         #【第三部分】没新出的公告就卖出闲置资产同时存理财账户【这里需要把没有的兑换成BGB并且转移到资金账户上避免频繁失败导致报错，之前估计就是BGB报错导致整体停滞】
         try:
-            logger.info(f"当前交易轮次为{tradenum}")
+            print(f"当前交易轮次为{tradenum}")
 
             supportinfo=getsupport(supporttype="英文公告")#这个公告打出来的日志是必须要看的
-            # logger.info(f"supportinfo,{supportinfo},{type(supportinfo)}")
-            for info in supportinfo:
-                logger.info(info['catalogName'])#前面是中文的后面是英文的
-                if (info['catalogName']=="数字货币及交易对上新")or(info['catalogName']=="New Cryptocurrency Listing"):
-                    df=pd.DataFrame(info['articles'])
-            # df=df[df["title"].str.contains("上市")
-            #       |
+            print(f"supportinfo,{supportinfo},{type(supportinfo)}")
+            # 【已作废】supportinfo=supportinfo['d9b2']['catalogs']#之前【d9b2】报错是因为从['d9b2']['catalogs']变成["d34e"]['catalogDetail'],所以抓不到数据16:35:27秒df才更新出来
+            
+            # 【使用递归函数直接查询articles字段的值】避免binance变更公告路径
+            def find_data(data):
+                if isinstance(data, dict):
+                    if 'articles' in data:
+                        yield data['articles']
+                    for value in data.values():
+                        yield from find_data(value)
+                elif isinstance(data, list):
+                    for item in data:
+                        yield from find_data(item)
+            articles = list(find_data(data=supportinfo))
+            print("articles",articles)
+            df=pd.DataFrame({})
+            for article in articles:
+                df=pd.concat([df,pd.DataFrame(article)])
+            print("df",df)
+
+            # #【中文公告筛选】
+            # # df=df[df["title"].str.contains("上市")
+            # #       |
             #       df["title"].str.contains("上线")
             #       ]#只要上市信息【中文频道】
+            # #【英文公告筛选】
             df=df[df["title"].str.contains("Will List")#上市【退市也有提到List XXX with，意思是去掉相关列表，但是下架的英文开头是Will End】
                 |
                 df["title"].str.contains("Will Add")#上线
                 ]#只要上市信息【英文频道】
+            
             df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
             df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
 
-            # logger.info(f"df排序前,{df},{type(df)}")
-            # df=df.sort_values(by='releaseDate',ascending=False)#releaseDate为datetime形式时进行排序，ascending=True是升序排列，ascending=False是降序排列，本身就是降序，暂时没问题的
-            # logger.info(f"df排序后,{df},{type(df)}")
+            print(f"df排序前,{df},{type(df)}")
+            df=df.sort_values(by='releaseDate',ascending=False)#releaseDate为datetime形式时进行排序，ascending=True是升序排列，ascending=False是降序排列，本身就是降序，暂时没问题的
+            print(f"df排序后,{df},{type(df)}")
             df=df.reset_index(drop=True)#重置索引避免后面越界
             # df=df[df.index==0]#【测试】截取第一行，返回值还是dataframe形式不是字典对象，.iloc截取出来就是对象形式了，.loc不能截取只有一行的情况基本忽略了
             supportdf=df.copy()
-            logger.info(f"supportdf,{supportdf},{type(supportdf)}")
+            print(f"supportdf,{supportdf},{type(supportdf)}")
         except Exception as e:
-            logger.info(f"公告获取报错,{e}")
+            print(f"公告获取报错,{e}")
 
 
 
@@ -228,15 +247,15 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 try:
                     thisutc=datetime.datetime.utcnow()
                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
-                    logger.info(f"thisnow,{thisnow}")
+                    print(f"thisnow,{thisnow}")
                     thisdf=df.iloc[index]
-                    logger.info(f"{index},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
-                    logger.info(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                    print(f"{index},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
+                    print(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
                     
                     # # 正则表达式匹配括号内的内容【识别代币名称】1个币2个币都是返回一个列表可以这样操作
                     # pattern=r'\(([^)]+)\)'
                     # matches=re.findall(pattern,thisdf.title)# 使用findall方法查找所有匹配的内容
-                    # logger.info(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
+                    # print(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
 
                     if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                                     #【实盘】
@@ -250,32 +269,32 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                                     ):
                         try:
                             newsnum+=1#判断是否有新公告，有新公告就执行下单任务【+=只要有新公告就不为0了】
-                            logger.info("目标上市公告刚刚发布")
+                            print("目标上市公告刚刚发布")
 
                             # 正则表达式匹配括号内的内容【识别代币名称】
                             pattern=r'\(([^)]+)\)'
                             matches=re.findall(pattern,thisdf.title)# 使用findall方法查找所有匹配的内容
-                            logger.info(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
+                            print(f"matches,{matches}")#类型是一个列表，对其中的内容处理之后就能识别出来目标代币了【这里整出来就是字符串列表了】
                             
                             #存储需要发送的消息的内容【避免后面导致内容变更】
                             mes="公告内容："+thisdf.title+"标的名称："+str(matches)+"公告时间（标准时）："+thisdf.releaseDate标准时+"当前时间（标准时）："+thisnow
                             
                             #截取公告里面第一个标的作为买入目标
                             thissymbol=matches[0]
-                            logger.info(f"新上市标的为,{thissymbol}")
+                            print(f"新上市标的为,{thissymbol}")
 
-                            logger.info("近期有新出上市公告赎回活期理财产品买入现货")
+                            print("近期有新出上市公告赎回活期理财产品买入现货")
 
                             #【理财资产信息】10次/1s (Uid)
                             request_path="/api/v2/earn/savings/assets"
                             params = {"periodType":"flexible",}#只要活期存款
                             savingsList=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]["resultList"]
-                            logger.info(savingsList)
+                            print(savingsList)
                             for savings in savingsList:
                                 thisproductId=savings['productId']
                                 thisorderId=savings['orderId']
                                 thisholdAmount=savings["holdAmount"]
-                                logger.info(f"thisproductId,{thisproductId},{type(thisproductId)},thisholdAmount,{thisholdAmount},{type(thisholdAmount)}")
+                                print(f"thisproductId,{thisproductId},{type(thisproductId)},thisholdAmount,{thisholdAmount},{type(thisholdAmount)}")
                                 #【赎回理财产品】10次/1s (Uid)
                                 request_path="/api/v2/earn/savings/redeem"
                                 params = {"productId":thisproductId,
@@ -285,37 +304,37 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                         }
                                 res=client._request_with_params(params=params,request_path=request_path,method="POST")
                                 res=res["data"]
-                                logger.info(f"赎回理财产品,{res}")
+                                print(f"赎回理财产品,{res}")
                         except Exception as e:
-                            logger.info(f"{thissymbol}理财赎回报错{e}")
+                            print(f"{thissymbol}理财赎回报错{e}")
                         try:
                             #【查询现货USDT余额】这里再对比一下最大下单金额
                             spotbalance=getspotbalance(coin="USDT")
                             usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-                            logger.info(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
+                            print(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
                             if float(usdtbalance)>0:#只在有余额的情况下交易
                                 #【交易精度】#20次/1s (IP)
                                 params={"symbol":thissymbol+"USDT"}
                                 request_path="/api/v2/spot/public/symbols"
                                 thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                                logger.info(f"{thisinfo}")
+                                print(f"{thisinfo}")
                                 minTradeAmount=int(thisinfo[0]["minTradeAmount"])#最小交易数量
                                 maxTradeAmount=int(thisinfo[0]["maxTradeAmount"])#最大交易数量
                                 quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
                                 pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
-                                logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
+                                print(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
                                 # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
                                 
                                 #【盘口深度】#20次/1s (IP)
                                 params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
                                 request_path="/api/v2/spot/market/orderbook"
                                 thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                                # logger.info(thisdepth)
+                                # print(thisdepth)
                                 bid1=thisdepth["bids"][0][0]#买一
                                 bid1v=thisdepth["bids"][0][1]
                                 ask1=thisdepth["asks"][0][0]#卖一
                                 ask1v=thisdepth["asks"][0][1]
-                                logger.info(f"""
+                                print(f"""
                                     {bid1},{type(bid1)},bid1
                                     {bid1v},{type(bid1v)},bid1v
                                     {ask1},{type(ask1)},ask1
@@ -328,20 +347,20 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                 pricePrecision)#对手盘一档上浮百分之二避免无法成交，之后保留pricePrecision位小数
                                 buyvolume=round(math.floor(float(usdtbalance)/buyprice*(10**quantityPrecision))/(10**quantityPrecision),
                                                 quantityPrecision)#quantityPrecision代表代币精度
-                                logger.info(f"buyprice,{buyprice},buyvolume,{buyvolume}")
+                                print(f"buyprice,{buyprice},buyvolume,{buyvolume}")
                                 #目标下单金额跟最大最小下单金额对比
                                 if buyvolume>float(maxTradeAmount):
                                     buyvolume=round(maxTradeAmount,
                                                     quantityPrecision)
-                                    logger.info("目标下单金额大于最大下单金额")
+                                    print("目标下单金额大于最大下单金额")
                                 else:
-                                    logger.info("目标下单金额正常")
+                                    print("目标下单金额正常")
                                 if buyvolume<float(minTradeAmount):
                                     buyvolume=round(minTradeAmount,
                                                     quantityPrecision)
-                                    logger.info("目标下单金额大于最大下单金额")
+                                    print("目标下单金额大于最大下单金额")
                                 else:
-                                    logger.info("目标下单金额正常")
+                                    print("目标下单金额正常")
                                 if buyvolume>0:#有余额才下单的
                                     #【现货下单】#10次/1s (UID)
                                     # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
@@ -365,26 +384,26 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                     request_path="/api/v2/spot/trade/place-order"
                                     #最小下单金额为1USDT
                                     thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
-                                    logger.info(f"{thisorder}")
+                                    print(f"{thisorder}")
                         except Exception as e:
-                            logger.info(f"{thissymbol}公告买入报错{e}")
+                            print(f"{thissymbol}公告买入报错{e}")
                         #【推送准备进行的交易记录】验证了一下没错恰好是在限制的时间内还在推送公告超时之后就不推送了
                         res=postmessage(mes)
-                        logger.info("公告推送",res)
+                        print("公告推送",res)
                 except Exception as e:
-                    logger.info(f"公告理财赎回买入报错组合模块报错{e}")
+                    print(f"公告理财赎回买入报错组合模块报错{e}")
         except Exception as e:
-            logger.info(f"公告买入模块整体报错,{e}")
+            print(f"公告买入模块整体报错,{e}")
 
 
      
         if newsnum==0:
-            logger.info("近期无新出上市公告卖出现货申购活期理财产品")
+            print("近期无新出上市公告卖出现货申购活期理财产品")
             try:
                 # 【查询现货非USDT余额】之前报错是现货闲置的BGB一直卖出失败导致后续无法执行
                 spotbalance=getspotbalance(coin="")
-                allbalance=[balance for balance in spotbalance if balance["coin"]!="USDT"]
-                logger.info(f"allbalance,{allbalance},{type(allbalance)}")
+                allbalance=[balance for balance in spotbalance if balance["coin"]!="USDT"]#只卖出非USDT的现货代币
+                print(f"allbalance,{allbalance},{type(allbalance)}")
                 for balance in allbalance:
                     try:
                         thissymbol=balance["coin"]
@@ -392,17 +411,17 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
                         thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
                         
-                        logger.info(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
+                        print(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
                         if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
-                            logger.info("当前有新公告验证时间")
+                            print("当前有新公告验证时间")
                             thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
-                            logger.info(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
+                            print(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
                             thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
-                            logger.info(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
+                            print(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
                             thisutc=datetime.datetime.utcnow()
                             thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
-                            logger.info(f"thisnow,{thisnow}")
-                            logger.info(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                            print(f"thisnow,{thisnow}")
+                            print(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
                             if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
                                                                     #【实盘】
                                                                     60*60*8#8小时【实盘时进行的验证就是8小时】
@@ -413,52 +432,52 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                                     #   60*20+#30分钟
                                                                     #   50#50秒
                                                                     ):
-                                logger.info("该标的上市公告结束不足8小时不执行卖出")
+                                print("该标的上市公告结束不足8小时不执行卖出")
                                 continue
                             else:
-                                logger.info("该标的上市公告结束较长时间直接卖出")
+                                print("该标的上市公告结束较长时间直接卖出")
                         else:
-                            logger.info("当前没有新公告直接卖出")
+                            print("当前没有新公告直接卖出")
                         #【交易精度】#20次/1s (IP)
                         params={"symbol":thissymbol+"USDT"}
                         request_path="/api/v2/spot/public/symbols"
                         thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                        logger.info(f"{thisinfo}")
+                        print(f"{thisinfo}")
                         minTradeAmount=int(thisinfo[0]["minTradeAmount"])#最小交易数量
                         maxTradeAmount=int(thisinfo[0]["maxTradeAmount"])#最大交易数量
                         quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
                         pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
-                        logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
+                        print(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
                         # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
                         
 
                         sellvolume=round(math.floor(float(sellvolume)*(10**quantityPrecision))/(10**quantityPrecision),
                                         quantityPrecision)#为防止余额不足需要先乘后除再取位数
-                        logger.info(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
+                        print(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
                         #目标下单金额跟最大最小下单金额对比
                         if sellvolume>float(maxTradeAmount):
                             sellvolume=round(maxTradeAmount,
                                             quantityPrecision)
-                            logger.info("目标下单金额大于最大下单金额")
+                            print("目标下单金额大于最大下单金额")
                         else:
-                            logger.info("目标下单金额正常")
+                            print("目标下单金额正常")
                         if sellvolume<float(minTradeAmount):
                             sellvolume=round(minTradeAmount,
                                             quantityPrecision)
-                            logger.info("目标下单金额大于最大下单金额")
+                            print("目标下单金额大于最大下单金额")
                         else:
-                            logger.info("目标下单金额正常")
+                            print("目标下单金额正常")
 
                         # 【盘口深度】#20次/1s (IP)
                         params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
                         request_path="/api/v2/spot/market/orderbook"
                         thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                        # logger.info(thisdepth)
+                        # print(thisdepth)
                         bid1=thisdepth["bids"][0][0]#买一
                         bid1v=thisdepth["bids"][0][1]
                         ask1=thisdepth["asks"][0][0]#卖一
                         ask1v=thisdepth["asks"][0][1]
-                        logger.info(f"""
+                        print(f"""
                             {bid1},{type(bid1)},bid1
                             {bid1v},{type(bid1v)},bid1v
                             {ask1},{type(ask1)},ask1
@@ -467,7 +486,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             )
                         
                         sellprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
-                        logger.info(f"sellvolume,{sellvolume}")
+                        print(f"sellvolume,{sellvolume}")
                         if sellvolume>0:#有余额才下单的
                             #【现货下单】#10次/1s (UID)
                             # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
@@ -491,23 +510,23 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             request_path="/api/v2/spot/trade/place-order"
                             #最小下单金额为1USDT
                             thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
-                            logger.info(f"{thisorder}")
+                            print(f"{thisorder}")
                     except Exception as e:
-                        logger.info(f"{balance}公告卖出报错{e}")
+                        print(f"{balance}公告卖出报错{e}")
             except Exception as e:
-                logger.info(f"公告卖出整体模块报错{e}")
+                print(f"公告卖出整体模块报错{e}")
             try:
                 #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
                 spotbalance=getspotbalance(coin="USDT")
                 usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-                logger.info(f"{usdtbalance},{type(usdtbalance)}")
+                print(f"{usdtbalance},{type(usdtbalance)}")
                 if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
-                    logger.info("余额大于1USDT执行理财申购")
+                    print("余额大于1USDT执行理财申购")
                     #【获取理财产品列表】#10次/1s (Uid)
                     savingslist=getsavingslist(coin="USDT")
-                    logger.info(f"{savingslist},{type(savingslist)}")
+                    print(f"{savingslist},{type(savingslist)}")
                     usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
-                    logger.info(f"{usdtproductId},{type(usdtproductId)}")
+                    print(f"{usdtproductId},{type(usdtproductId)}")
                     #【申购理财产品】10次/1s (Uid)
                     request_path="/api/v2/earn/savings/subscribe"
                     params = {"productId":usdtproductId,
@@ -516,11 +535,11 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             }
                     res=client._request_with_params(params=params,request_path=request_path,method="POST")
                     res=res["data"]
-                    logger.info(f"申购理财产品,{res}")
+                    print(f"申购理财产品,{res}")
                 else:
-                    logger.info(f"余额不足不进行申购")
+                    print(f"余额不足不进行申购")
             except Exception as e:
-                logger.info(f"闲置资金活期理财报错,{e}")
+                print(f"闲置资金活期理财报错,{e}")
 
 
 
@@ -529,38 +548,38 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             time.sleep(3)
             #【下单3秒不成交就执行超时撤单】
             thistime=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-            logger.info(f"thistime,{thistime}")
+            print(f"thistime,{thistime}")
             # #【获取全部订单】#10次/1s (UID)
             # params={}
             # request_path="/api/v2/spot/trade/history-orders"
             # all_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
-            # logger.info(f"all_orders,{all_orders}")
+            # print(f"all_orders,{all_orders}")
             #【获取未成交订单】#10次/1s (UID)
             params={}
             request_path="/api/v2/spot/trade/unfilled-orders"
             open_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
-            logger.info(f"open_orders,{open_orders}")
+            print(f"open_orders,{open_orders}")
             for thisorder in open_orders:
-                logger.info(f"{thisorder}")
+                print(f"{thisorder}")
                 thissymbol=thisorder["symbol"]
                 thisorderId=thisorder["orderId"]
                 ctime=thisorder["cTime"]#1732973006752创建时间
                 utime=thisorder["uTime"]#1732973006818更新时间
-                logger.info(f"ctime,{ctime},{type(ctime)}")
+                print(f"ctime,{ctime},{type(ctime)}")
                 thisdt = datetime.datetime.fromtimestamp(int(ctime)//1000, tz=datetime.timezone.utc)
-                logger.info(f"{thisdt}")
-                logger.info(f"{thistime-thisdt}")
+                print(f"{thisdt}")
+                print(f"{thistime-thisdt}")
                 if thistime-thisdt>=datetime.timedelta(seconds=3):
-                    logger.info("该订单挂起超时执行撤单")
+                    print("该订单挂起超时执行撤单")
                     #【现货撤单】#10次/1s (UID)
                     params={"symbol":thissymbol,
                             "orderId":thisorderId,
                             }
                     request_path="/api/v2/spot/trade/cancel-order"
                     cance_order = client._request_with_params(params=params,request_path=request_path,method="POST")
-                    logger.info(f"cance_order,{cance_order}")#撤单成功
+                    print(f"cance_order,{cance_order}")#撤单成功
         except Exception as e:
-            logger.info("撤单报错",e)
+            print("撤单报错",e)
 
 # 【github action能够最大程度避免IP报错】main这个异步函数的作用是处理公告监控问题
 if __name__ == '__main__':
