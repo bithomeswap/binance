@@ -564,7 +564,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
 
         try:#真正的交易机会就很短时间休息久了容易错过机会
             #【休息】避免速度过快限制IP
-            time.sleep(1.5)#1秒一次容易抓不到公告【报错抓到的是空值{也可能是IP问题}】
+            time.sleep(2)#1秒一次容易抓不到公告【报错抓到的是空值{也可能是IP问题}】
             thistime=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
             print(f"thistime,{thistime}")
             # #【获取全部订单】#10次/1s (UID)
