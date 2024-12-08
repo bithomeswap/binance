@@ -230,7 +230,6 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             pattern=r'\(([^)]+)\)'#正则表达式【用来从公告中过滤目标代币】
             df["token"]=df["title"].apply(lambda x:re.findall(pattern,x))#使用findall方法查找所有匹配的内容
 
-
             #【同一个代币只要最开始上线的那一次才有利润】
             df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
             df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
@@ -261,7 +260,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
 
 
 
-        newsnum=0
+        newsnum=0#【可能try\except也是比较耗时的代码】去掉之后速度明显提高
         #如果没符合要求的公告这里整体都不会执行所以这块不需要验证
         for index in range(0,len(df)):#如果只有一行会不会报错
             try:
