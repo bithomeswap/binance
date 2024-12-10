@@ -257,8 +257,6 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
         except Exception as e:
             print(f"公告获取报错,{e}")
 
-# 【打新在bitget加一个市值验证{只打当前总市值小于10亿美金的}或者时间验证{只打已经上市超过8小时的标的}】
-        
         newsnum=0#【可能try\except也是比较耗时的代码】去掉之后速度明显提高
         #如果没符合要求的公告这里整体都不会执行所以这块不需要验证
         for index in range(0,len(df)):#如果只有一行会不会报错
@@ -289,7 +287,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     thissymbol=thisdf["token"]
                     print(f"新上市标的为,{thissymbol}")
 
-                    #【通过小时K验证上市时间是否比币安公告时间早】
+                    #【通过小时K线验证上市时间是否比币安公告时间早】时间验证K线时长超过8小时
                     params={"symbol":str(thissymbol+"USDT"),
                         "granularity":"1h",
                         # "granularity":"1M",#【测试】
@@ -420,190 +418,190 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 
 
 
-        # print("newsnum",newsnum)
-        # if newsnum==0:
-        #     print("近期无新出上市公告卖出现货申购活期理财产品")
-        #     try:
-        #         #【查询现货非USDT余额】之前报错是现货闲置的BGB一直卖出失败导致后续无法执行
-        #         spotbalance=getspotbalance(coin="")
-        #         allbalance=[balance for balance in spotbalance if balance["coin"]!="USDT"]#只卖出非USDT的现货代币
-        #         print(f"allbalance,{allbalance},{type(allbalance)}")
-        #         for balance in allbalance:
-        #             print("balance",balance)
-        #             try:
-        #                 thissymbol=balance["coin"]
-        #                 sellvolume=balance["available"]
-        #                 #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
-        #                 thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
+        print("newsnum",newsnum)
+        if newsnum==0:
+            print("近期无新出上市公告卖出现货申购活期理财产品")
+            try:
+                #【查询现货非USDT余额】之前报错是现货闲置的BGB一直卖出失败导致后续无法执行
+                spotbalance=getspotbalance(coin="")
+                allbalance=[balance for balance in spotbalance if balance["coin"]!="USDT"]#只卖出非USDT的现货代币
+                print(f"allbalance,{allbalance},{type(allbalance)}")
+                for balance in allbalance:
+                    print("balance",balance)
+                    try:
+                        thissymbol=balance["coin"]
+                        sellvolume=balance["available"]
+                        #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
+                        thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
                         
-        #                 print(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
-        #                 if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
-        #                     print("当前有新公告验证时间")
-        #                     thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
-        #                     print(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
-        #                     thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
-        #                     print(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
-        #                     thisutc=datetime.datetime.utcnow()
-        #                     thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
-        #                     print(f"thisnow,{thisnow}")
-        #                     print(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
-        #                     if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
-        #                                                             #【实盘】
-        #                                                             60*60*12#12小时【超过这个时间就执行卖出】
+                        print(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
+                        if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
+                            print("当前有新公告验证时间")
+                            thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
+                            print(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
+                            thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
+                            print(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
+                            thisutc=datetime.datetime.utcnow()
+                            thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
+                            print(f"thisnow,{thisnow}")
+                            print(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                            if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
+                                                                    #【实盘】
+                                                                    60*60*24#【超过这个时间就执行卖出】
 
-        #                                                             # #   #【测试】
-        #                                                             #   60*60*24*19+#19天
-        #                                                             #   60*60*24+#21小时
-        #                                                             #   60*20+#30分钟
-        #                                                             #   50#50秒
-        #                                                             ):
-        #                         print("该标的上市公告结束不足8小时不执行卖出")
-        #                         continue
-        #                     else:
-        #                         print("该标的上市公告结束较长时间直接卖出")
-        #                 else:
-        #                     print("当前没有新公告直接卖出")
-        #                 #【交易精度】#20次/1s (IP)
-        #                 params={"symbol":thissymbol+"USDT"}
-        #                 request_path="/api/v2/spot/public/symbols"
-        #                 thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-        #                 print(f"{thisinfo}")
-        #                 minTradeAmount=int(thisinfo[0]["minTradeAmount"])#最小交易数量
-        #                 maxTradeAmount=int(thisinfo[0]["maxTradeAmount"])#最大交易数量
-        #                 quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
-        #                 pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
-        #                 print(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
-        #                 # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
+                                                                    # #   #【测试】
+                                                                    #   60*60*24*19+#19天
+                                                                    #   60*60*24+#21小时
+                                                                    #   60*20+#30分钟
+                                                                    #   50#50秒
+                                                                    ):
+                                print("该标的上市公告结束不足8小时不执行卖出")
+                                continue
+                            else:
+                                print("该标的上市公告结束较长时间直接卖出")
+                        else:
+                            print("当前没有新公告直接卖出")
+                        #【交易精度】#20次/1s (IP)
+                        params={"symbol":thissymbol+"USDT"}
+                        request_path="/api/v2/spot/public/symbols"
+                        thisinfo = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                        print(f"{thisinfo}")
+                        minTradeAmount=int(thisinfo[0]["minTradeAmount"])#最小交易数量
+                        maxTradeAmount=int(thisinfo[0]["maxTradeAmount"])#最大交易数量
+                        quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
+                        pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
+                        print(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
+                        # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
                         
 
-        #                 sellvolume=round(math.floor(float(sellvolume)*(10**quantityPrecision))/(10**quantityPrecision),
-        #                                 quantityPrecision)#为防止余额不足需要先乘后除再取位数
-        #                 print(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
-        #                 #目标下单金额跟最大最小下单金额对比
-        #                 if sellvolume>float(maxTradeAmount):
-        #                     sellvolume=round(maxTradeAmount,
-        #                                     quantityPrecision)
-        #                     print("目标下单金额大于最大下单金额")
-        #                 else:
-        #                     print("目标下单金额正常")
-        #                 if sellvolume<float(minTradeAmount):
-        #                     sellvolume=round(minTradeAmount,
-        #                                     quantityPrecision)
-        #                     print("目标下单金额大于最大下单金额")
-        #                 else:
-        #                     print("目标下单金额正常")
+                        sellvolume=round(math.floor(float(sellvolume)*(10**quantityPrecision))/(10**quantityPrecision),
+                                        quantityPrecision)#为防止余额不足需要先乘后除再取位数
+                        print(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
+                        #目标下单金额跟最大最小下单金额对比
+                        if sellvolume>float(maxTradeAmount):
+                            sellvolume=round(maxTradeAmount,
+                                            quantityPrecision)
+                            print("目标下单金额大于最大下单金额")
+                        else:
+                            print("目标下单金额正常")
+                        if sellvolume<float(minTradeAmount):
+                            sellvolume=round(minTradeAmount,
+                                            quantityPrecision)
+                            print("目标下单金额大于最大下单金额")
+                        else:
+                            print("目标下单金额正常")
 
-        #                 # 【盘口深度】#20次/1s (IP)
-        #                 params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
-        #                 request_path="/api/v2/spot/market/orderbook"
-        #                 thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-        #                 # print(thisdepth)
-        #                 bid1=thisdepth["bids"][0][0]#买一
-        #                 bid1v=thisdepth["bids"][0][1]
-        #                 ask1=thisdepth["asks"][0][0]#卖一
-        #                 ask1v=thisdepth["asks"][0][1]
-        #                 print(f"""卖出
-        #                     {bid1},{type(bid1)},bid1
-        #                     {bid1v},{type(bid1v)},bid1v
-        #                     {ask1},{type(ask1)},ask1
-        #                     {ask1v},{type(ask1v)},ask1v
-        #                     """
-        #                     )
+                        # 【盘口深度】#20次/1s (IP)
+                        params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
+                        request_path="/api/v2/spot/market/orderbook"
+                        thisdepth = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                        # print(thisdepth)
+                        bid1=thisdepth["bids"][0][0]#买一
+                        bid1v=thisdepth["bids"][0][1]
+                        ask1=thisdepth["asks"][0][0]#卖一
+                        ask1v=thisdepth["asks"][0][1]
+                        print(f"""卖出
+                            {bid1},{type(bid1)},bid1
+                            {bid1v},{type(bid1v)},bid1v
+                            {ask1},{type(ask1)},ask1
+                            {ask1v},{type(ask1v)},ask1v
+                            """
+                            )
                         
-        #                 sellprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
-        #                 print(f"sellvolume,{sellvolume}")
-        #                 if sellvolume>0:#有余额才下单的
-        #                     #【现货下单】#10次/1s (UID)
-        #                     # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
-        #                     params={
-        #                         "symbol":str(thissymbol+"USDT"),#"SBTCSUSDT_SUMCBL"
-        #                         "side":"sell",#方向：PS_BUY现货买入，PS_SELL现货卖出
+                        sellprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
+                        print(f"sellvolume,{sellvolume}")
+                        if sellvolume>0:#有余额才下单的
+                            #【现货下单】#10次/1s (UID)
+                            # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
+                            params={
+                                "symbol":str(thissymbol+"USDT"),#"SBTCSUSDT_SUMCBL"
+                                "side":"sell",#方向：PS_BUY现货买入，PS_SELL现货卖出
 
-        #                         #【限价单】
-        #                         "orderType":"limit",#订单类型"limit"、"market"
-        #                         "price":str(sellprice),#限价价格# 价格小数位、价格步长可以通过获取交易对信息接口获取
-        #                         "size":str(sellvolume),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
+                                #【限价单】
+                                "orderType":"limit",#订单类型"limit"、"market"
+                                "price":str(sellprice),#限价价格# 价格小数位、价格步长可以通过获取交易对信息接口获取
+                                "size":str(sellvolume),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
                                 
-        #                         #【市价单】判断剧烈行情是否一定能够成交
-        #                         # "orderType":"market",#订单类型"limit"、"market"
-        #                         # "size":str(buyusdt),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
+                                #【市价单】判断剧烈行情是否一定能够成交
+                                # "orderType":"market",#订单类型"limit"、"market"
+                                # "size":str(buyusdt),# 委托数量# 对于Limit和Market-Sell订单，此参数表示base coin数量;# 对于Market-Buy订单，此参数表示quote coin数量；
                                 
-        #                         "force":"gtc",#执行策略（orderType为market时无效）# gtc：普通限价单，一直有效直至取消# post_only：只做 maker 订单# fok：全部成交或立即取消# ioc：立即成交并取消剩余
-        #                         # "clientOrderId":str(random_string("Cuongitl"))#自定义订单ID
-        #                         "tpslType":"normal",# normal：普通单（默认值）# tpsl：止盈止损单
-        #                     }
-        #                     request_path="/api/v2/spot/trade/place-order"
-        #                     #最小下单金额为1USDT
-        #                     thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
-        #                     print(f"{thisorder}")
-        #             except Exception as e:
-        #                 print(f"{balance}公告卖出报错{e}")
-        #     except Exception as e:
-        #         print(f"公告卖出整体模块报错{e}")
-        #     try:
-        #         #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
-        #         spotbalance=getspotbalance(coin="USDT")
-        #         usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-        #         print(f"{usdtbalance},{type(usdtbalance)}")
-        #         if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
-        #             print("余额大于1USDT执行理财申购")
-        #             #【获取理财产品列表】#10次/1s (Uid)
-        #             savingslist=getsavingslist(coin="USDT")
-        #             print(f"{savingslist},{type(savingslist)}")
-        #             usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
-        #             print(f"{usdtproductId},{type(usdtproductId)}")
-        #             #【申购理财产品】10次/1s (Uid)
-        #             request_path="/api/v2/earn/savings/subscribe"
-        #             params = {"productId":usdtproductId,
-        #                     "periodType":"flexible",#只要活期存款
-        #                     "amount":usdtbalance
-        #                     }
-        #             res=client._request_with_params(params=params,request_path=request_path,method="POST")
-        #             res=res["data"]
-        #             print(f"申购理财产品,{res}")
-        #         else:
-        #             print(f"余额不足不进行申购")
-        #     except Exception as e:
-        #         print(f"闲置资金活期理财报错,{e}")
+                                "force":"gtc",#执行策略（orderType为market时无效）# gtc：普通限价单，一直有效直至取消# post_only：只做 maker 订单# fok：全部成交或立即取消# ioc：立即成交并取消剩余
+                                # "clientOrderId":str(random_string("Cuongitl"))#自定义订单ID
+                                "tpslType":"normal",# normal：普通单（默认值）# tpsl：止盈止损单
+                            }
+                            request_path="/api/v2/spot/trade/place-order"
+                            #最小下单金额为1USDT
+                            thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
+                            print(f"{thisorder}")
+                    except Exception as e:
+                        print(f"{balance}公告卖出报错{e}")
+            except Exception as e:
+                print(f"公告卖出整体模块报错{e}")
+            try:
+                #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
+                spotbalance=getspotbalance(coin="USDT")
+                usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
+                print(f"{usdtbalance},{type(usdtbalance)}")
+                if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
+                    print("余额大于1USDT执行理财申购")
+                    #【获取理财产品列表】#10次/1s (Uid)
+                    savingslist=getsavingslist(coin="USDT")
+                    print(f"{savingslist},{type(savingslist)}")
+                    usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
+                    print(f"{usdtproductId},{type(usdtproductId)}")
+                    #【申购理财产品】10次/1s (Uid)
+                    request_path="/api/v2/earn/savings/subscribe"
+                    params = {"productId":usdtproductId,
+                            "periodType":"flexible",#只要活期存款
+                            "amount":usdtbalance
+                            }
+                    res=client._request_with_params(params=params,request_path=request_path,method="POST")
+                    res=res["data"]
+                    print(f"申购理财产品,{res}")
+                else:
+                    print(f"余额不足不进行申购")
+            except Exception as e:
+                print(f"闲置资金活期理财报错,{e}")
 
 
 
-        # try:#真正的交易机会就很短时间休息久了容易错过机会
-        #     #【休息】避免速度过快限制IP
-        #     time.sleep(2.5)#2秒一次容易抓不到公告【报错抓到的是空值{也可能是IP问题}】，2.5秒一次就正常了
-        #     thistime=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-        #     print(f"thistime,{thistime}")
-        #     # #【获取全部订单】#10次/1s (UID)
-        #     # params={}
-        #     # request_path="/api/v2/spot/trade/history-orders"
-        #     # all_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
-        #     # print(f"all_orders,{all_orders}")
-        #     #【获取未成交订单】#10次/1s (UID)
-        #     params={}
-        #     request_path="/api/v2/spot/trade/unfilled-orders"
-        #     open_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
-        #     print(f"open_orders,{open_orders}")
-        #     for thisorder in open_orders:
-        #         print(f"{thisorder}")
-        #         thissymbol=thisorder["symbol"]
-        #         thisorderId=thisorder["orderId"]
-        #         ctime=thisorder["cTime"]#1732973006752创建时间
-        #         utime=thisorder["uTime"]#1732973006818更新时间
-        #         print(f"ctime,{ctime},{type(ctime)}")
-        #         thisdt = datetime.datetime.fromtimestamp(int(ctime)//1000, tz=datetime.timezone.utc)
-        #         print(f"{thisdt}")
-        #         print(f"{thistime-thisdt}")
-        #         if thistime-thisdt>=datetime.timedelta(seconds=3):
-        #             print("该订单挂起超时执行撤单")
-        #             #【现货撤单】#10次/1s (UID)
-        #             params={"symbol":thissymbol,
-        #                     "orderId":thisorderId,
-        #                     }
-        #             request_path="/api/v2/spot/trade/cancel-order"
-        #             cance_order = client._request_with_params(params=params,request_path=request_path,method="POST")
-        #             print(f"cance_order,{cance_order}")#撤单成功
-        # except Exception as e:
-        #     print("撤单报错",e)
+        try:#真正的交易机会就很短时间休息久了容易错过机会
+            #【休息】避免速度过快限制IP
+            time.sleep(2.5)#2秒一次容易抓不到公告【报错抓到的是空值{也可能是IP问题}】，2.5秒一次就正常了
+            thistime=datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+            print(f"thistime,{thistime}")
+            # #【获取全部订单】#10次/1s (UID)
+            # params={}
+            # request_path="/api/v2/spot/trade/history-orders"
+            # all_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
+            # print(f"all_orders,{all_orders}")
+            #【获取未成交订单】#10次/1s (UID)
+            params={}
+            request_path="/api/v2/spot/trade/unfilled-orders"
+            open_orders = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
+            print(f"open_orders,{open_orders}")
+            for thisorder in open_orders:
+                print(f"{thisorder}")
+                thissymbol=thisorder["symbol"]
+                thisorderId=thisorder["orderId"]
+                ctime=thisorder["cTime"]#1732973006752创建时间
+                utime=thisorder["uTime"]#1732973006818更新时间
+                print(f"ctime,{ctime},{type(ctime)}")
+                thisdt = datetime.datetime.fromtimestamp(int(ctime)//1000, tz=datetime.timezone.utc)
+                print(f"{thisdt}")
+                print(f"{thistime-thisdt}")
+                if thistime-thisdt>=datetime.timedelta(seconds=3):
+                    print("该订单挂起超时执行撤单")
+                    #【现货撤单】#10次/1s (UID)
+                    params={"symbol":thissymbol,
+                            "orderId":thisorderId,
+                            }
+                    request_path="/api/v2/spot/trade/cancel-order"
+                    cance_order = client._request_with_params(params=params,request_path=request_path,method="POST")
+                    print(f"cance_order,{cance_order}")#撤单成功
+        except Exception as e:
+            print("撤单报错",e)
 
 # 【github action能够最大程度避免IP报错】main这个异步函数的作用是处理公告监控问题
 if __name__ == '__main__':
