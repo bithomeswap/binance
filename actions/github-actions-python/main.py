@@ -195,24 +195,35 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             # 【公告出来的时候这里直接没数据了】
             supportinfo=getsupport(supporttype="英文公告")#这个公告打出来的日志是必须要看的
             print(f"supportinfo,{supportinfo},{type(supportinfo)}")
-            # 【已作废】supportinfo=supportinfo['d9b2']['catalogs']#之前【d9b2】报错是因为从['d9b2']['catalogs']变成["d34e"]['catalogDetail'],所以抓不到数据16:35:27秒df才更新出来
-            
+            # 需要查询latestArticles字段才代表的新公告{只在新币上线后才出现}，之前查询的articles字段其实是全部的历史公告{滞后一分钟左右}
+            # supportinfo={'e084': {}, 'd34e': {'ssrUserIsLoggedIn': False, 'catalogDetail': 
+            #                                   {'catalogId': 48, 'parentCatalogId': None, 'icon': 'https://public.bnbstatic.com/image/cms/content/body/202202/9252ba30f961b1a20d49e622a0ecfad5.png', 'catalogName': 'New Cryptocurrency Listing', 'description': None, 'catalogType': 1, 'total': 1609, 'articles': [{'id': 219513, 'code': '5cbdc8e506644364a281d614a19afbb6', 'title': 'Binance Will Add Movement (MOVE) on Earn, Buy Crypto, Convert, Margin & Futures', 'type': 1, 'releaseDate': 1733746147487}, {'id': 219510, 'code': '601c0c23d12e40ee80310ac5e7c6369e', 'title': 'Movement (MOVE) Listing Will Be Advanced', 'type': 1, 'releaseDate': 1733744707679}, {'id': 219471, 'code': '8a585286abc547d293e269beeb6b9bf3', 'title': 'Introducing Movement (MOVE) on Binance HODLer Airdrops! Subscribe your BNB to Simple Earn', 'type': 1, 'releaseDate': 1733732956897}, {'id': 219327, 'code': 'bb1e28bf562341cfbd67791081533fa0', 'title': 'Binance Will Add Across Protocol (ACX) and Orca (ORCA) on Earn, Buy Crypto, Convert, Margin & Futures', 'type': 1, 'releaseDate': 1733488747249}, {'id': 219276, 'code': 'b8b988973b88493192f2e43ba26da331', 'title': 'Binance Will List Across Protocol (ACX) and Orca (ORCA) with Seed Tag Applied', 'type': 1, 'releaseDate': 1733474058953}, {'id': 219122, 'code': 'aa40cb409c5444068432164c3c916f3a', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-12-06', 'type': 1, 'releaseDate': 1733385601771}, {'id': 219071, 'code': 'beac1e0a0edf4fe69d5e5c45f9d60343', 'title': 'Binance Futures Will Launch USDⓈ-Margined KAIAUSDT and AEROUSDT Perpetual Contracts With up to 75x Leverage', 'type': 1, 'releaseDate': 1733313823583}, {'id': 218928, 'code': '6be3b4cf73684f4a89be236abb0fe61f', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-12-04', 'type': 1, 'releaseDate': 1733212803588}, {'id': 218915, 'code': 'c04318cda6bc4fa6865235f1dfa77dba', 'title': 'Binance Futures Copy Trading Adds New USDⓈ-M Perpetual Contracts (2024-12-03)', 'type': 1, 'releaseDate': 1733211012825}, {'id': 218471, 'code': '7700345477ea4c0fb89b1ddce0d28979', 'title': 'Binance Futures Will Launch USDⓈ-Margined MORPHOUSDT and CHILLGUYUSDT Perpetual Contracts With up to 75x Leverage', 'type': 1, 'releaseDate': 1732710701624}, {'id': 218444, 'code': 'e5a9c33ac55043808e202dde68774ac2', 'title': 'Binance Will Add Thena (THE) on Earn, Buy Crypto, Convert, Margin & Futures', 'type': 1, 'releaseDate': 1732699831890}, {'id': 218416, 'code': '87748909170b4c0bada2aeac2447aa70', 'title': 'Notice on New Trading Pairs and Trading Bots Services on Binance Spot - 2024-11-28 and 2024-11-29', 'type': 1, 'releaseDate': 1732694432674}, {'id': 218294, 'code': '7c06e61804694408b3401e0a380f954f', 'title': 'Introducing Thena (THE) on Binance HODLer Airdrops! Subscribe your BNB to Simple Earn', 'type': 1, 'releaseDate': 1732607852153}, {'id': 218188, 'code': '3dd2c1e3f5f040ac9f7a94c6597ef842', 'title': 'Binance Futures Will Launch USDⓈ-Margined 1000WHYUSDT and 1000CHEEMSUSDT Perpetual Contracts With up to 75x Leverage', 'type': 1, 'releaseDate': 1732527302268}, {'id': 218165, 'code': '02067834ba564042aa7e5f0d30eb2731', 'title': 'Binance Options Will Launch BNBUSDT and SOLUSDT Monthly Options', 'type': 1, 'releaseDate': 1732510801511}, {'id': 218065, 'code': 'cb5e509a881640938eaa1eca26b4b413', 'title': 'Binance Margin Adds New USDC Pairs - 2024-11-25', 'type': 1, 'releaseDate': 1732501821187}, {'id': 217985, 'code': 'c214b24b9f004196aa12fb1e6736572b', 'title': 'Binance Futures Will Launch USDⓈ-Margined SLERFUSDT and SCRTUSDT Perpetual Contracts With up to 75x Leverage', 'type': 1, 'releaseDate': 1732181402071}, {'id': 217887, 'code': '72ba79e3212848bcb6aba53eb6e55d4c', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-11-22', 'type': 1, 'releaseDate': 1732096809305}, {'id': 217727, 'code': '67e7da69b8e541c1bfacac7f43f75d78', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-11-20', 'type': 1, 'releaseDate': 1732006802967}, {'id': 217630, 'code': 'f6577bdd30d542e0af4f76a14dfeb241', 'title': 'Binance Futures Will Launch USDⓈ-Margined BANUSDT and AKTUSDT Perpetual Contracts With up to 75x Leverage', 'type': 1, 'releaseDate': 1731922212272}, {'id': 217573, 'code': '8061c9b481244c88be73a68980db5761', 'title': 'Binance Margin Adds New USDC Pairs - 2024-11-18', 'type': 1, 'releaseDate': 1731906001533}, {'id': 217499, 'code': 'e25f171ca86342e9b7c160cc1697a090', 'title': 'Binance Futures Will Launch USDⓈ-Margined DEGENUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1731663013144}, {'id': 217413, 'code': 'b50b0a2d80024a8b8765af2eb8560cd0', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-11-15', 'type': 1, 'releaseDate': 1731574815563}, {'id': 217379, 'code': '7c4bf0dac2de4842984fc7c066204b05', 'title': 'Introducing Usual (USUAL) on Binance Launchpool and Pre-Market!', 'type': 1, 'releaseDate': 1731569529354}, {'id': 217261, 'code': '220339ba12bd451c8362ad8501ea87e9', 'title': 'Binance Futures Will Launch USDⓈ-Margined HIPPOUSDT and 1000XUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1731493800839}, {'id': 217145, 'code': '59687cb3396e469cb602d286e8d74088', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-11-13', 'type': 1, 'releaseDate': 1731402006478}, {'id': 217041, 'code': 'f689ebe21cdb4eda91bd0071de48e6f8', 'title': 'Binance Will Add Act I : The AI Prophecy (ACT) and Peanut the Squirrel (PNUT) on Earn, Buy Crypto, Convert, Margin & Futures', 'type': 1, 'releaseDate': 1731317423797}, {'id': 216994, 'code': 'd16d96c136154680a6373225d592bca1', 'title': 'Binance Will List Act I : The AI Prophecy (ACT) and Peanut the Squirrel (PNUT) with Seed Tag Applied', 'type': 1, 'releaseDate': 1731303569462}, {'id': 216852, 'code': '8f3b03e494c94360b9985edc5402fbac', 'title': 'Binance Futures Will Launch USDⓈ-Margined GRASSUSDT, DRIFTUSDT, and SWELLUSDT Perpetual Contracts With up to 75x Leverage', 'type': 1, 'releaseDate': 1731074582460}, {'id': 216744, 'code': '209355888f0042f788899dd1a04a0052', 'title': 'Binance Futures Will Launch USDⓈ-Margined 1000000MOGUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1730975333236}, {'id': 216599, 'code': 'd19f7ec8ab8349fba6fd3749a80e07c9', 'title': 'Binance Will Add Cow Protocol (COW) and Cetus Protocol (CETUS) on Earn, Buy Crypto, Convert, Margin & Futures', 'type': 1, 'releaseDate': 1730892607366}, {'id': 216473, 'code': '2faa229be2ba4b758bbeb1859f63ba36', 'title': 'Binance Will List Cow Protocol (COW) and Cetus Protocol (CETUS) with Seed Tag Applied', 'type': 1, 'releaseDate': 1730869807602}, {'id': 216417, 'code': '2f31d829c9154042888b906d8b04f004', 'title': 'Binance Futures Copy Trading Adds New USDⓈ-M Perpetual Contracts (2024-11-05)', 'type': 1, 'releaseDate': 1730790010168}, {'id': 216392, 'code': 'a55d38732b34452ab9f78ac8832af59c', 'title': 'Binance Futures Will Launch USDⓈ-Margined PONKEUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1730716223083}, {'id': 216263, 'code': 'bab086aed6a2414a8de85e45b6f54714', 'title': 'Binance Futures Will Launch USDⓈ-Margined TROYUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1730372403363}, {'id': 216184, 'code': 'd898f94ad35b478a8f60e12025c8ea2b', 'title': 'Binance Will Add Kaia (KAIA) on Earn, Buy Crypto, Convert, and Margin', 'type': 1, 'releaseDate': 1730359816080}, {'id': 215934, 'code': '1956ee23ec9f49eab2323a33852caf3b', 'title': 'Binance Futures Copy Trading Adds New USDⓈ-M Perpetual Contracts (2024-10-29)', 'type': 1, 'releaseDate': 1730167208125}, {'id': 215898, 'code': 'dbd05b4f89ae4974912d790eba516b4c', 'title': 'Binance Futures Will Launch USDⓈ-Margined SANTOSUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1730116800976}, {'id': 215763, 'code': '7b091f5c38324434a9bdd252e4788442', 'title': 'Binance Futures Will Launch USDⓈ-Margined SAFEUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1729852200674}, {'id': 215707, 'code': '5e93f7cd3f9a47e194085f969ac57b85', 'title': 'Binance Futures Will Launch USDⓈ-Margined MOODENGUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1729843231189}, {'id': 215677, 'code': 'ff1a4c64f1aa4fef870adc7ef802d700', 'title': 'Binance Futures Will Launch USDⓈ-Margined GOATUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1729769672095}, {'id': 215222, 'code': '4e1e3eda477349068ecec191a7b16c5b', 'title': 'Binance Will Add Scroll (SCR) on Earn, Buy Crypto, Convert, Margin & Futures', 'type': 1, 'releaseDate': 1729585806416}, {'id': 215164, 'code': 'ed43b9b4d8f8471087b6d200bffcb4ff', 'title': 'Binance Futures Will Launch USDⓈ-Margined 1000CATUSDT Perpetual Contract With up to 75x Leverage', 'type': 1, 'releaseDate': 1729506638455}, {'id': 214941, 'code': 'a6d2ae0b765c4bb79b192f3904fc5757', 'title': 'Binance Will Add Lumia (LUMIA) on Earn, Buy Crypto, Convert & Margin', 'type': 1, 'releaseDate': 1729240205707}, {'id': 214915, 'code': '31020fc6cfab4ff18867a0dc3c33e52f', 'title': 'Binance Has Added Binance Staked SOL (BNSOL) on Auto-Invest, Buy Crypto & Loans', 'type': 1, 'releaseDate': 1729238405403}, {'id': 214841, 'code': '765ca1b5b58848fd88c9ee3684b91201', 'title': 'Binance Will End the Scroll (SCR) Pre-Market and List Scroll (SCR) with Seed Tag Applied', 'type': 1, 'releaseDate': 1729214529998}, {'id': 214749, 'code': 'b1e67c2d4e8e4807a5592ccd6c559155', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot and Margin - 2024-10-17', 'type': 1, 'releaseDate': 1729062001941}, {'id': 214550, 'code': '60c0525da44448f9907322f23098c045', 'title': 'Notice on New Trading Pairs & Trading Bots Services on Binance Spot - 2024-10-16', 'type': 1, 'releaseDate': 1728979209984}, {'id': 214361, 'code': 'f6d2a85234594827b9e078bfed5e72c3', 'title': 'Binance Will Add Binance Staked SOL (BNSOL) on Earn, Convert & Margin', 'type': 1, 'releaseDate': 1728545405645}, {'id': 214289, 'code': '56398cfbd9c4419d9c0b54a0d1da2a7b', 'title': 'Binance Will List Binance Staked SOL (BNSOL) and Introduce BNSOL Boosted APR Promotion', 'type': 1, 'releaseDate': 1728457213876}], 'catalogs': []}, 'articleDetail': None, 
+            #                                   'latestArticles': [{'id': 219677, 'code': 'd4f72bdd82d44a0591ee40d41f0b44d5', 'title': 'Binance Will List Magic Eden (ME) with Seed Tag Applied', 'imageLink': None, 'shortLink': None, 'body': None, 'type': 1, 'catalogId': 48, 'catalogName': 'New Cryptocurrency Listing', 'publishDate': 1733815340546, 'footer': None}, {'id': 219593, 'code': '41bd87af5772450f948181eb4b9504fb', 'title': 'Binance Pool Supports Luckycoin (LKY) Merged Mining with Zero Fees', 'imageLink': None, 'shortLink': None, 'body': None, 'type': 1, 'catalogId': 49, 'catalogName': 'Latest Binance News', 'publishDate': 1733810401571, 'footer': None}, {'id': 219623, 'code': '6cd13a9337404a1caa1bb55ac9175d2a', 'title': 'Binance Will Support the Sei (SEI) Network Upgrade', 'imageLink': None, 'shortLink': None, 'body': None, 'type': 1, 'catalogId': 157, 'catalogName': 'Wallet Maintenance Updates', 'publishDate': 1733803202721, 'footer': None}, {'id': 219596, 'code': '4ee88af1c2ab4cec9b5f66d0a57a6147', 'title': 'Binance Upgrades Binance Loans (Flexible Rate) (2024-12-10)', 'imageLink': None, 'shortLink': None, 'body': None, 'type': 1, 'catalogId': 49, 'catalogName': 'Latest Binance News', 'publishDate': 1733799602853, 'footer': None}, {'id': 219569, 'code': '064513c6458f42bcb99b2779cc031284', 'title': "Binance x CR7 'ForeverSkills' Digital Collectibles Are Now Available", 'imageLink': None, 'shortLink': None, 'body': None, 'type': 1, 'catalogId': 49, 'catalogName': 'Latest Binance News', 'publishDate': 1733792401775, 'footer': None}], 'relatedArticles': [], 'hotArticles': [], 'catalogs': [], 'lastCategory': {}, 'coinPairs': [], 'coinPriceVisible': False, 'needEnForDefault': False}}
+            # print("latestArticles",supportinfo['d34e']["latestArticles"])
             # 【使用递归函数直接查询articles字段的值】避免binance变更公告路径
             def find_data(data):
+                target="latestArticles"#设置需要监控的字段
                 if isinstance(data, dict):
-                    if 'articles' in data:
-                        yield data['articles']
+                    if target in data:#当字段在当前元素下
+                        yield data[target]#返回对象的目标字段
                     for value in data.values():
-                        yield from find_data(value)
+                        yield from find_data(value)#继续遍历
                 elif isinstance(data, list):
                     for item in data:
                         yield from find_data(item)
             articles = list(find_data(data=supportinfo))
             print("articles",articles)
             df=pd.DataFrame({})
-            for article in articles:
-                df=pd.concat([df,pd.DataFrame(article)])
+            for article in articles:#目前这个格式无论是深一层只有一层的字典还是多层字典都可以成功转换了
+                print("article",article)
+                try:
+                    df=pd.concat([df,pd.DataFrame(article)])
+                    print("当前公告有很多行直接拼接")
+                except Exception as e:
+                    df=pd.concat([df,pd.DataFrame([article])])
+                    print("当前公告只有一行需要特殊处理")
             print("全部公告",df)
+            # df.to_csv("df.csv")
 
             # # 【中文公告筛选】
             # df=df[df["title"].str.contains("上市")
@@ -229,20 +240,20 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             pattern=r'\(([^)]+)\)'#正则表达式【用来从公告中过滤目标代币】
             df["token"]=df["title"].apply(lambda x:re.findall(pattern,x))#使用findall方法查找所有匹配的内容
 
-            #【同一个代币只要最开始上线的那一次才有利润】
-            df["releaseDate"]=pd.to_datetime(df['releaseDate'],unit='ms')
-            df["releaseDate标准时"]=df["releaseDate"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
+            #【同一个代币只要最开始上线的那一次才有利润】当前公告是推送时间publishDate，历史公告是存储时间releaseDate
+            df["timestamp"]=pd.to_datetime(df['publishDate'],unit='ms')
+            df["timestamp标准时"]=df["timestamp"].dt.strftime('%Y-%m-%d %H:%M:%S')#这里是标准时9.30，东八区就是17.30
             
-            #【对token列值相同的数据只保留releaseDate列值最小的行】
+            #【对token列值相同的数据只保留timestamp列值最小的行】
             # df.to_csv('df过滤前.csv')
             df=df.explode('token')#把一行公告拆分成多行方便选中和下单
             # df.to_csv('df过滤中.csv')
-            df=df.groupby('token', as_index=False).apply(lambda x: x.nsmallest(1,'releaseDate'))
+            df=df.groupby('token', as_index=False).apply(lambda x: x.nsmallest(1,'timestamp'))
             print(f"对关联代币进行去重后{df}")
 
             #【根据时间降序排列】
             print(f"目标公告排序前,{df},{type(df)}")
-            df=df.sort_values(by='releaseDate',ascending=False)#releaseDate为datetime形式时进行排序，ascending=True是升序排列，ascending=False是降序排列，本身就是降序，暂时没问题的
+            df=df.sort_values(by='timestamp',ascending=False)#timestamp为datetime形式时进行排序，ascending=True是升序排列，ascending=False是降序排列，本身就是降序，暂时没问题的
             print(f"目标公告排序后,{df},{type(df)}")
             #【重置索引避免后面越界】
             df=df.reset_index(drop=True)
@@ -266,12 +277,12 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 print(f"thisnow,{thisnow}")
                 thisdf=df.iloc[index]
                 print(f"{index},thisdf,{thisdf},{type(thisdf)}")#每一行是index+1
-                print(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
+                print(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.timestamp}")
                 
                 print('thisdf["token"]',thisdf["token"],type(thisdf["token"]))#无论几个币类型都是列表
                 # thissymbol=thisdf["token"]
                 # print(f"新上市标的为,{thissymbol},{type(thissymbol)}")
-                if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
+                if (thisutc-thisdf.timestamp)<=datetime.timedelta(seconds=
                                                                 #【实盘】
                                                                 30#【实盘时验证公告发布时间不超过30秒】时间内持续下单{对手盘一档溢价百二}
                                                                 
@@ -298,7 +309,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                     if len(thiskline)>=8:
                         print("binance新上市币种在bitget已经上市超过8小时值得买入")
                         #存储需要发送的消息的内容【避免后面导致内容变更】
-                        mes="公告内容："+thisdf.title+"标的列表："+str(thissymbol)+"公告时间（标准时）："+thisdf.releaseDate标准时+"当前时间（标准时）："+thisnow
+                        mes="公告内容："+thisdf.title+"标的列表："+str(thissymbol)+"公告时间（标准时）："+thisdf.timestamp标准时+"当前时间（标准时）："+thisnow
                         try:
                             print("近期有新出上市公告赎回活期理财产品买入现货")
                             #【理财资产信息】10次/1s (Uid)
@@ -437,15 +448,15 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         print(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
                         if len(thisdf)>0:#如果整体符合要求的公告为空则这里也是空
                             print("当前有新公告验证时间")
-                            thisdf=thisdf[thisdf["releaseDate"]==thisdf["releaseDate"].max()]#取最大的一行【看看只有一行会不会报错】
-                            print(f"thisdf保留releaseDate最大的行,{thisdf},{type(thisdf)}")
+                            thisdf=thisdf[thisdf["timestamp"]==thisdf["timestamp"].max()]#取最大的一行【看看只有一行会不会报错】
+                            print(f"thisdf保留timestamp最大的行,{thisdf},{type(thisdf)}")
                             thisdf=thisdf.iloc[0]#这样截取出来就跟上面一样了
                             print(f"thisdf截取第一行后,{thisdf},{type(thisdf)}")
                             thisutc=datetime.datetime.utcnow()
                             thisnow=thisutc.strftime('%Y-%m-%d %H:%M:%S')
                             print(f"thisnow,{thisnow}")
-                            print(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.releaseDate}")
-                            if (thisutc-thisdf.releaseDate)<=datetime.timedelta(seconds=
+                            print(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.timestamp}")
+                            if (thisutc-thisdf.timestamp)<=datetime.timedelta(seconds=
                                                                     #【实盘】
                                                                     60*60*24#【超过这个时间就执行卖出】
 
