@@ -482,7 +482,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                 print("该标的上市公告结束较长时间直接卖出")
                         else:
                             print("当前没有新公告验证持仓标的在币安是否已经上市超过一定时间")
-                            # thissymbol="ME"#测试K线长度【实盘的时候要注销】
+                            thissymbol="ME"#测试K线长度【实盘的时候要注销】
                             print("thissymbol",thissymbol)
                             try:
                                 klines = binanceclient.get_klines(symbol=thissymbol+"USDT",
