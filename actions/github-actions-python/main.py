@@ -482,7 +482,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                                     # 50#50秒
                                                                     ):
                                 print("该标的上市公告结束不足8小时不执行卖出")
-                                continue
+                                continue#这里直接跳出去了不执行后面内容
                             else:
                                 print("该标的上市公告结束较长时间直接卖出")
                         else:
@@ -503,7 +503,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                                     # 50#50秒
                                                                     ):
                                 print("该标的在bitget持仓时间不超过8小时不执行卖出")
-                                continue
+                                continue#这里直接跳出去了不执行后面内容
                             else:
                                 print("该标的在bitget持仓时间超过8小时执行卖出")
                             #【以是否在bitget上买入订单最后一条买入订单达到8小时】
@@ -556,7 +556,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                                     # 50#50秒
                                                                     ):
                                 print("该标的在bitget最后买入时间不超过8小时不执行卖出")
-                                continue
+                                continue#这里直接跳出去了不执行后面内容
                             else:
                                 print("该标的在bitget最后买入时间超过8小时执行卖出")
 
@@ -574,12 +574,12 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             #     print("klines",len(klines),klines)
                             #     if not len(klines)<=2:#15分钟K小于等于2条（上市时间在30分钟内）
                             #         print("该标的在币安上市时间不超过30分钟不执行卖出")
-                            #         continue
+                            #         continue#这里直接跳出去了不执行后面内容
                             #     else:
                             #         print("该标的在币安上市时间超过30分钟执行卖出")
                             # except:
                             #     print("该标的尚未在币安上市USDT交易对")
-                            #     continue
+                            #     continue#这里直接跳出去了不执行后面内容
                                 
 
 
