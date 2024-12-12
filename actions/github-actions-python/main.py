@@ -11,14 +11,14 @@ import json
 import time
 import datetime
 
-#【安装binance】
-# pip install python-binance
-from binance.client import Client as BinanceClient
-# 币安的api配置
-api_key = "0jmNVvNZusoXKGkwnGLBghPh8Kmc0klh096VxNS9kn8P0nkAEslVUlsuOcRoGrtm"
-api_secret = "PbSWkno1meUckhmkLyz8jQ2RRG7KgmZyAWhIF0qPdCJrmDSFxoxGdMG5gZeYYCgy"
-binanceclient = BinanceClient(api_key, api_secret)# 创建Binance客户端
-# binanceclient = BinanceClient()# 创建Binance客户端【在公共数据上不限制IP也不需要添加密钥】
+# #【安装binance】这种方式不能从美国IP获取数据
+# # pip install python-binance
+# from binance.client import Client as BinanceClient
+# # 币安的api配置
+# api_key = "0jmNVvNZusoXKGkwnGLBghPh8Kmc0klh096VxNS9kn8P0nkAEslVUlsuOcRoGrtm"
+# api_secret = "PbSWkno1meUckhmkLyz8jQ2RRG7KgmZyAWhIF0qPdCJrmDSFxoxGdMG5gZeYYCgy"
+# binanceclient = BinanceClient(api_key, api_secret)# 创建Binance客户端
+# # binanceclient = BinanceClient()# 创建Binance客户端【在公共数据上不限制IP也不需要添加密钥】
 
 # 【acx】没监控到【应该是时间转换报错了但是报错信息变成前面的路径了】
 
