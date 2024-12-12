@@ -535,8 +535,8 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             # all_orders=[order for order in all_orders if (order["symbol"]==thissymbol+"USDT")and(order["side"]=="buy")]
                             all_orders=[order for order in all_orders if (order["baseCoin"]==thissymbol)and(order["side"]=="buy")]
                             print(f"all_orders,{len(all_orders)}")
-                            # cTime	String	创建时间，Unix毫秒时间戳，例如1690196141868
-                            # uTime	String	更新时间，Unix毫秒时间戳，例如1690196141868
+                            # cTime	String	创建时间{略快一秒}，Unix毫秒时间戳，例如1690196141868
+                            # uTime	String	更新时间{略慢一秒}，Unix毫秒时间戳，例如1690196141868
                             lasttime=[order["cTime"] for order in all_orders]
                             print("lasttime",lasttime,type(lasttime))#数据类型为字典
                             lasttime=max(lasttime)#直接max就能取出来其中最大的值
@@ -707,8 +707,8 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 print(f"{thisorder}")
                 thissymbol=thisorder["symbol"]
                 thisorderId=thisorder["orderId"]
-                ctime=thisorder["cTime"]#1732973006752创建时间
-                utime=thisorder["uTime"]#1732973006818更新时间
+                ctime=thisorder["cTime"]#1732973006752创建时间{略快一秒}
+                utime=thisorder["uTime"]#1732973006818更新时间{略慢一秒}
                 print(f"ctime,{ctime},{type(ctime)}")
                 thisdt = datetime.datetime.fromtimestamp(int(ctime)//1000, tz=datetime.timezone.utc)
                 print(f"{thisdt}")
