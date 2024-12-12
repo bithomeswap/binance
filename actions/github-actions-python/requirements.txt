@@ -2,4 +2,4 @@ requests
 beautifulsoup4
 pandas
 python-bitget
-python-binance
+# python-binance#在非美国IP上使用binance客户端的时候才用的上
