@@ -11,6 +11,17 @@ import json
 import time
 import datetime
 
+#【安装binance】
+# pip install python-binance
+from binance.client import Client
+import time
+import pandas as pd
+# 币安的api配置
+# api_key = "0jmNVvNZusoXKGkwnGLBghPh8Kmc0klh096VxNS9kn8P0nkAEslVUlsuOcRoGrtm"
+# api_secret = "PbSWkno1meUckhmkLyz8jQ2RRG7KgmZyAWhIF0qPdCJrmDSFxoxGdMG5gZeYYCgy"
+# binanceclient = Client(api_key, api_secret)# 创建Binance客户端
+binanceclient = Client()# 创建Binance客户端【在公共数据上不限制IP也不需要添加密钥】
+
 # 【acx】没监控到【应该是时间转换报错了但是报错信息变成前面的路径了】
 
 # pip install python-bitget
@@ -457,20 +468,40 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             print(f"当前持仓标的{thissymbol}最新一条现货上币公告与当时时间的差值{thisutc-thisdf.timestamp}")
                             if (thisutc-thisdf.timestamp)<=datetime.timedelta(seconds=
                                                                     #【实盘】
-                                                                    60*60*24#【超过这个时间就执行卖出】
+                                                                    60*60*8#【超过这个时间就执行卖出】
 
-                                                                    # #   #【测试】
-                                                                    #   60*60*24*19+#19天
-                                                                    #   60*60*24+#21小时
-                                                                    #   60*20+#30分钟
-                                                                    #   50#50秒
+                                                                    # #【测试】
+                                                                    # 60*60*24*19+#19天
+                                                                    # 60*60*24+#21小时
+                                                                    # 60*20+#30分钟
+                                                                    # 50#50秒
                                                                     ):
                                 print("该标的上市公告结束不足8小时不执行卖出")
                                 continue
                             else:
                                 print("该标的上市公告结束较长时间直接卖出")
                         else:
-                            print("当前没有新公告直接卖出")
+                            print("当前没有新公告验证持仓标的在币安是否已经上市超过一定时间")
+                            # thissymbol="ME"#测试K线长度【实盘的时候要注销】
+                            print("thissymbol",thissymbol)
+                            try:
+                                klines = binanceclient.get_klines(symbol=thissymbol+"USDT",
+                                                        # interval=binanceclient.KLINE_INTERVAL_1DAY,#时间周期（1日）
+                                                        # interval=binanceclient.KLINE_INTERVAL_1HOUR,#时间周期（1小时）
+                                                        interval=binanceclient.KLINE_INTERVAL_15MINUTE,#时间周期（15分钟）
+                                                        limit=10,#取样数量
+                                                        )#2024.12.12ME的月K有1条{日K有3条}，BTC的月K有10条
+                                print("klines",len(klines),klines)
+                                if not len(klines)<=2:#15分钟K小于等于2条（上市时间在30分钟内）
+                                    print("该标的在币安上市时间不超过30分钟不执行卖出")
+                                    continue
+                                else:
+                                    print("该标的在币安上市时间超过30分钟执行卖出")
+                            except:
+                                print("该标的尚未在币安上市USDT交易对")
+                                continue
+                                
+
                         #【交易精度】#20次/1s (IP)
                         params={"symbol":thissymbol+"USDT"}
                         request_path="/api/v2/spot/public/symbols"
