@@ -195,10 +195,12 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
         #【多个进程任务同时监控进行交易的情况下一个任务失败了但是没有导致订单错乱，理财申购上其他任务前后脚下出去了但是直接返回下单失败而没有报错】
         #【while true下下了几百笔金额溢出的失败订单，并没有导致其他模块受限说明频率限制可能不是一个字段超频就会导致整个账户或者IP无法使用】
         tradenum+=1
+        print(f"当前交易轮次为{tradenum}")
+
+
+
         #【第3部分】没新出的公告就卖出闲置资产同时存理财账户【需要加一个卖出失败的报错处理避免直接停止任务】
         try:
-            print(f"当前交易轮次为{tradenum}")
-            
             # 【公告出来的时候这里直接没数据了】
             supportinfo=getsupport(supporttype="英文公告")#这个公告打出来的日志是必须要看的
             print(f"supportinfo,{supportinfo},{type(supportinfo)}")
@@ -263,16 +265,15 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
             print(f"目标公告排序后,{df},{type(df)}")
             #【重置索引避免后面越界】
             df=df.reset_index(drop=True)
-
-            #【测试】截取第一行，返回值还是dataframe形式不是字典对象，.iloc截取出来就是对象形式了，.loc不能截取只有一行的情况基本忽略了
-            # df=df[df.index==0]
-
-            #【存储supportdf】
-            # df.to_csv('df.csv')#耗时过多是这里的问题
             supportdf=df.copy()
+
+            # supportdf.to_csv('supportdf.csv')#【存储supportdf】
+            # supportdf=supportdf[supportdf.index==0]#【测试】截取第一行，返回值是dataframe{.iloc截取出来是字典对象格式了，.loc不能截取只有一行的数据}
             print(f"supportdf,{supportdf},{type(supportdf)}")
         except Exception as e:
             print(f"公告获取报错,{e}")
+
+
 
         newsnum=0#【可能try\except也是比较耗时的代码】去掉之后速度明显提高
         #如果没符合要求的公告这里整体都不会执行所以这块不需要验证
@@ -291,18 +292,25 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                 print(f"thisnow,{thisnow}")
                 print(f"第{index}条现货上币公告与当时时间的差值{thisutc-thisdf.timestampdatetime}")
                 if (thisutc-thisdf.timestampdatetime)<=datetime.timedelta(seconds=
-                                                                #【实盘】
-                                                                30#【实盘时验证公告发布时间不超过30秒】时间内持续下单{对手盘一档溢价百二}
-                                                                #   #【测试】
-                                                                #   60*60*24*20+#19天
-                                                                #   60*60*0+#21小时
-                                                                #   60*10+#30分钟
-                                                                #   50#50秒
+                                                                # #【实盘】
+                                                                # 60#【实际上真正抓到公告跟公告发布时间的差值大概30秒，所以验证是否交易可以多等一会儿】时间内持续下单{对手盘一档溢价百二}
+                                                                #【测试】
+                                                                60*60*24*20+#19天
+                                                                60*60*0+#21小时
+                                                                60*10+#30分钟
+                                                                50#50秒
                                                                 ):
                     newsnum+=1#判断是否有新公告，有新公告就执行下单任务【+=只要有新公告就不为0了】
                     print("目标上市公告刚刚发布")
 
-                    thissymbol=thisdf["token"]
+                    # #【VELODROME】这个标的在当前的bitget上找不到这个简称，它的简称是VELO，完全没有信息能够将两者联系在一起
+                    # request_path="/api/v2/spot/public/coins"
+                    # params={}
+                    # thistoken = client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                    # # print("thistoken",thistoken,len(thistoken))
+                    # # pd.DataFrame(thistoken).to_csv("thistoken.csv")
+
+                    thissymbol=thisdf["token"]#这里可能binance公告的简称和bitget的交易对简称对不上导致无法买入
                     print(f"新上市标的为,{thissymbol}")
 
                     #【通过小时K线验证上市时间是否比币安公告时间早】时间验证K线时长超过8小时
@@ -319,7 +327,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         mes="公告内容："+thisdf.title+"标的列表："+str(thissymbol)+"公告时间（标准时）："+thisdf.timestampdatetime标准时+"当前时间（标准时）："+thisnow
                         try:
                             print("近期有新出上市公告赎回活期理财产品买入现货")
-                            #【理财资产信息】10次/1s (Uid)
+                            #【理财资产信息】10次/1s (Uid)查询活期存款持仓对其进行赎回
                             request_path="/api/v2/earn/savings/assets"
                             params = {"periodType":"flexible",}#只要活期存款
                             savingsList=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]["resultList"]
@@ -339,7 +347,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                 res=client._request_with_params(params=params,request_path=request_path,method="POST")
                                 res=res["data"]
                                 print(f"赎回理财产品,{res}")
-                            #【查询现货USDT余额】这里再对比一下最大下单金额
+                            #【查询现货USDT余额】对赎回后的USDT余额进行统计方便后面计算下单金额
                             spotbalance=getspotbalance(coin="USDT")
                             usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
                             print(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
@@ -457,7 +465,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         thissymbol=balance["coin"]
                         sellvolume=balance["available"]
 
-                        #【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
+                        #验证当前公告名单当中是否有该持仓标的【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
                         thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
                         
                         print(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
@@ -660,31 +668,35 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         print(f"{balance}公告卖出报错{e}")
             except Exception as e:
                 print(f"公告卖出整体模块报错{e}")
-            try:
-                #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
-                spotbalance=getspotbalance(coin="USDT")
-                usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-                print(f"{usdtbalance},{type(usdtbalance)}")
-                if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
-                    print("余额大于1USDT执行理财申购")
-                    #【获取理财产品列表】#10次/1s (Uid)
-                    savingslist=getsavingslist(coin="USDT")
-                    print(f"{savingslist},{type(savingslist)}")
-                    usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
-                    print(f"{usdtproductId},{type(usdtproductId)}")
-                    #【申购理财产品】10次/1s (Uid)
-                    request_path="/api/v2/earn/savings/subscribe"
-                    params = {"productId":usdtproductId,
-                            "periodType":"flexible",#只要活期存款
-                            "amount":usdtbalance
-                            }
-                    res=client._request_with_params(params=params,request_path=request_path,method="POST")
-                    res=res["data"]
-                    print(f"申购理财产品,{res}")
-                else:
-                    print(f"余额不足不进行申购")
-            except Exception as e:
-                print(f"闲置资金活期理财报错,{e}")
+
+
+
+            # #【现货理财采用自动申购模式，避免手动干预无法微操】
+            # try:
+            #     #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
+            #     spotbalance=getspotbalance(coin="USDT")
+            #     usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
+            #     print(f"{usdtbalance},{type(usdtbalance)}")
+            #     if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
+            #         print("余额大于1USDT执行理财申购")
+            #         #【获取理财产品列表】#10次/1s (Uid)
+            #         savingslist=getsavingslist(coin="USDT")
+            #         print(f"{savingslist},{type(savingslist)}")
+            #         usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
+            #         print(f"{usdtproductId},{type(usdtproductId)}")
+            #         #【申购理财产品】10次/1s (Uid)
+            #         request_path="/api/v2/earn/savings/subscribe"
+            #         params = {"productId":usdtproductId,
+            #                 "periodType":"flexible",#只要活期存款
+            #                 "amount":usdtbalance
+            #                 }
+            #         res=client._request_with_params(params=params,request_path=request_path,method="POST")
+            #         res=res["data"]
+            #         print(f"申购理财产品,{res}")
+            #     else:
+            #         print(f"余额不足不进行申购")
+            # except Exception as e:
+            #     print(f"闲置资金活期理财报错,{e}")
 
 
 
