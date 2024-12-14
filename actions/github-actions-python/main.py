@@ -400,13 +400,13 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                                     quantityPrecision)
                                     print("目标下单金额大于最大下单金额")
                                 else:
-                                    print("目标下单金额正常")
+                                    print("目标下单金额正常【小于最大下单金额】")
                                 if buyvolume<float(minTradeAmount):
                                     buyvolume=round(minTradeAmount,
                                                     quantityPrecision)
                                     print("目标下单金额大于最大下单金额")
                                 else:
-                                    print("目标下单金额正常")
+                                    print("目标下单金额正常【大于最小下单金额】")
                                 if buyvolume>0:#有余额才下单的
                                     #【现货下单】#10次/1s (UID)
                                     # symbol, quantity, side, orderType, force, price='', clientOrderId=None)
@@ -465,7 +465,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         thissymbol=balance["coin"]
                         sellvolume=balance["available"]
 
-                        #验证当前公告名单当中是否有该持仓标的【生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
+                        #验证当前公告名单当中是否有该持仓标的【{公告简称长bitget简称短也能检索到这个公告}生成supportdf之前已经确认过是只要上币公告了】df["title"].str.contains("Will List")|df["title"].str.contains("Will Add")
                         thisdf=supportdf[supportdf["title"].str.contains(thissymbol)]#这个截取出来的切片还是dataframe的格式跟之前的截取出来一个对象的情况不一样，取值需要加上[0]
                         
                         print(f"thisdf,{thisdf},{type(thisdf)},{str(len(thisdf))},{str(thisdf.empty)}")#如果为空len(thisdf)=0且thisdf.empty为True
@@ -492,7 +492,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                 print("该标的上市公告结束不足8小时不执行卖出")
                                 continue#这里直接跳出去了不执行后面内容
                             else:
-                                print("该标的上市公告结束较长时间直接卖出")
+                                print("该标的上市公告结束超过8小时直接卖出")
                         else:
                             print("当前没有新公告验证持仓标的在币安是否已经上市超过一定时间")
                             print("thissymbol",thissymbol)
@@ -604,6 +604,8 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         # {'code': '00000', 'msg': 'success', 'requestTime': 1732951086595, 'data': {'symbol': 'BTCUSDT_SPBL', 'symbolName': 'BTCUSDT', 'symbolDisplayName': 'BTCUSDT', 'baseCoin': 'BTC', 'baseCoinDisplayName': 'BTC', 'quoteCoin': 'USDT', 'quoteCoinDisplayName': 'USDT', 'minTradeAmount': '0', 'maxTradeAmount': '0', 'takerFeeRate': '0.002', 'makerFeeRate': '0.002', 'priceScale': '2', 'quantityScale': '6', 'quotePrecision': '8', 'status': 'online', 'minTradeUSDT': '1', 'buyLimitPriceRatio': '0.05', 'sellLimitPriceRatio': '0.05', 'maxOrderNum': '500'}}
                         
 
+
+                        #【因为下单精度问题很多零碎的代币都没卖掉】
                         sellvolume=round(math.floor(float(sellvolume)*(10**quantityPrecision))/(10**quantityPrecision),
                                         quantityPrecision)#为防止余额不足需要先乘后除再取位数
                         print(f"{thissymbol},sellvolume,{sellvolume},{type(sellvolume)}")
@@ -613,13 +615,13 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                                             quantityPrecision)
                             print("目标下单金额大于最大下单金额")
                         else:
-                            print("目标下单金额正常")
+                            print("目标下单金额正常【小于最大下单金额】")
                         if sellvolume<float(minTradeAmount):
                             sellvolume=round(minTradeAmount,
                                             quantityPrecision)
                             print("目标下单金额大于最大下单金额")
                         else:
-                            print("目标下单金额正常")
+                            print("目标下单金额正常【大于最小下单金额】")
 
                         # 【盘口深度】#20次/1s (IP)
                         params={"symbol":str(thissymbol+"USDT"), "limit":'150', "type":'step0'}
@@ -663,7 +665,7 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                             request_path="/api/v2/spot/trade/place-order"
                             #最小下单金额为1USDT
                             thisorder = client._request_with_params(params=params,request_path=request_path,method="POST")
-                            print(f"{thisorder}")
+                            print(f"thisorder{thisorder}")#如果执行了下单这里返回一个order详情{包含下单是否成功的返回值}
                     except Exception as e:
                         print(f"{balance}公告卖出报错{e}")
             except Exception as e:
