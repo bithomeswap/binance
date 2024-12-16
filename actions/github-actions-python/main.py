@@ -434,11 +434,11 @@ async def main():#bitget交易所的频率限制一般是每秒10次/（IP）、
                         except Exception as e:
                             print(f"{thissymbol}公告买入报错{e}")
                         #【将公告信息推送到微信】
-                        res=postmessage(mes)
+                        res=postmessage(mes)#最新的VANA是在bitget新上市不足8小时不执行交易
+                        print("公告推送",res)
                     else:
                         print("binance新上市币种在bitget上市时间不足8小时不执行交易")
                     #【推送准备进行的交易记录】验证了一下没错恰好是在限制的时间内还在推送公告超时之后就不推送了
-                    print("公告推送",res)
             except Exception as e:
                 print(f"公告理财赎回买入报错组合模块报错{e}")
                 
