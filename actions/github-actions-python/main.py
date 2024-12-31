@@ -1083,7 +1083,9 @@ while True:#暂时只做八小时一次的，方便后期维护
                                 }
                             request_path="/api/v2/mix/account/open-count"#可开仓数量
                             res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
-                            logger.info(f"总可开仓数量,{str(thissymbol)},{type(res)},{res},{type(res["size"])},{res["size"]}")#unrealizedPL未实现盈亏
+                            logger.info(f"总可开仓数量,{str(thissymbol)},{type(res)},{res}")#unrealizedPL未实现盈亏
+                            logger.info(type(res["size"]))#单独提出来避免[]在github action当中报错
+                            logger.info(res["size"])#单独提出来避免[]在github action当中报错
                             maxvolume=float(res["size"])#最大开仓数量
                             logger.info(f"maxvolume,{maxvolume}")
                             # #最大下单数量=maxvolume-已经持仓的数量
