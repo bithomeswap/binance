@@ -248,7 +248,8 @@ logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
 
 # #【如果之前的任务当中获取到实盘的金额进行了模拟盘的交易就会导致报错】
 # trademoney=2000#【实盘】单次下单最大金额USDT
-trademoney=float(mixbalance)/holdnum#【测试】单次下单最大金额USDT
+# trademoney=float(mixbalance)/holdnum#【测试】单次下单最大金额USDT
+trademoney=float(mixbalance)#【测试】单次下单最大金额USDT
 trademoneyrate=holdnum*4#【最大持仓倍数】单个交易对的持仓金额超过trademoneyrate*trademoney后就不再执行交易
 #【上述代码当中其实杠杆后的持仓金额是总资产的4倍左右】问题1为何会有ETH，问题2xrp为何不继续执行了？
 
