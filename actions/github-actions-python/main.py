@@ -646,7 +646,8 @@ while True:#暂时只做八小时一次的，方便后期维护
         # usdtEquity#折算USDT权益
         mixbalance=[re["available"] for re in res if re["marginCoin"]==marginCoin][0]#返回的数据为字符串需要提前转float
         logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
-        trademoney=float(mixbalance)#【实盘】单次下单最大金额USDT{一般为总资产的余额即可}【实盘无法交易是因为初始化的时候合约余额为0】
+        # 【放到代码一开始进行初始化会因为默认余额为0导致后续交易金额为0因而无法交易】
+        trademoney=float(mixbalance)#【实盘】trademoney*trademoneytraderate就是单次下单最大金额USDT{一般低于总资产的余额}，trademoney*trademoneyhorate是最大持仓金额
         try:
             if thisproductType=="USDT-FUTURES":#只在实盘赎回理财产品
                 logger.info(f"赎回活期理财产品执行开仓")
