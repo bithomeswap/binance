@@ -215,7 +215,7 @@ def getsavingslist(coin):#10次/1s (Uid)
 
 
 droplist=[]#仓位过重不再执行开仓的标的
-holdnum=2#选择需要交易标的的总数量
+holdnum=3#选择需要交易标的的总数量
 
 thisproductType="USDT-FUTURES"#【实盘】
 absrate=0.003#【实盘】
@@ -252,10 +252,9 @@ logger.info(f"总账户合约资产余额,{type(res)},{res}")#unrealizedPL未实
 mixbalance=[re["available"] for re in res if re["marginCoin"]==marginCoin][0]#返回的数据为字符串需要提前转float
 logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
 
+
 # #【如果之前的任务当中获取到实盘的金额进行了模拟盘的交易就会导致报错】
-# trademoney=2000#【实盘】单次下单最大金额USDT
-# trademoney=float(mixbalance)/holdnum#【测试】单次下单最大金额USDT
-trademoney=float(mixbalance)#【测试】单次下单最大金额USDT
+trademoney=float(200)#【实盘】单次下单最大金额USDT{一般为总资产的余额即可}【实盘无法交易是因为初始化的时候合约余额为0】
 trademoneyrate=holdnum*4#【最大持仓倍数】单个交易对的持仓金额超过trademoneyrate*trademoney后就不再执行交易
 #【上述代码当中其实杠杆后的持仓金额是总资产的4倍左右】问题1为何会有ETH，问题2xrp为何不继续执行了？
 
@@ -1092,7 +1091,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                             maxmoney=maxvolume*buyprice
                             #计算下单数量【这里不一定是对的，有时候比可开金额要大】
                             if maxmoney>trademoney:#当maxmoney大于trademoney的时候按照trademoney
-                                buymoney=trademoney
+                                buymoney=trademoney#这里在实盘显示的0，也就是目标下单
                                 logger.info(f"trademoney,{trademoney}")
                             else:#当maxmoney小于等于于trademoney的时候按照maxmoney
                                 buymoney=maxmoney
