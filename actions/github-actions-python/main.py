@@ -402,11 +402,11 @@ while True:#暂时只做八小时一次的，方便后期维护
     #thisnow=datetime.datetime.now().time()#直接获取东八区时间（同花顺使用的就是使用的东八区的上海时间，但是怕他换服务器）
     logger.info(f"当前小时分钟数,{str(thisnow)},如果卡在这里了说明没到交易时间或者时区不对")
     if (
-        (thisnow>datetime.time(8,00))and(thisnow<datetime.time(15,50))
+        ((thisnow>datetime.time(8,00))and(thisnow<datetime.time(15,50)))
         or
-        (thisnow>datetime.time(16,00))and(thisnow<datetime.time(23,50))
+        ((thisnow>datetime.time(16,00))and(thisnow<datetime.time(23,50)))
         or
-        (thisnow>datetime.time(0,00))and(thisnow<datetime.time(7,50))
+        ((thisnow>datetime.time(0,00))and(thisnow<datetime.time(7,50)))
     ):#【在这三个时间段直接清仓USDT存理财】
     # if True:#【测试平仓】
     # if False:#【测试开仓】
@@ -874,11 +874,11 @@ while True:#暂时只做八小时一次的，方便后期维护
         bitget_mixtickers.to_csv("bitget合约行情信息.csv")
 
         if (#在特定时间内才执行交易任务
-            (thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00))
+            ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00)))
             or
-            (thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50))
+            ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50)))
             or
-            (thisnow>datetime.time(23,58))and(thisnow<datetime.time(24,00))
+            (thisnow>datetime.time(23,58))
         ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
         # if True:#【测试】
             logger.info(f"bitget_mixtickers,{bitget_mixtickers}")
@@ -1133,11 +1133,11 @@ while True:#暂时只做八小时一次的，方便后期维护
                             thisnow=(datetime.datetime.utcnow()+datetime.timedelta(hours=8)).time()
                             logger.info(f"thisnow,{thisnow}")
                             if (#在特定时间内才执行交易任务
-                                (thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00))
+                                ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00)))
                                 or
-                                (thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50))
+                                ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50)))
                                 or
-                                (thisnow>datetime.time(23,58))and(thisnow<datetime.time(24,00))
+                                (thisnow>datetime.time(23,58))
                             ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
                             # if True:#【测试】
                                 # {'marginCoin': 'SUSDT','symbol': 'SEOSSUSDT','holdSide': 'short','openDelegateSize': '0','marginSize': '167.5439','available': '2071','locked': '0','total': '2071','leverage': '10','achievedProfits': '0','openPriceAvg': '0.809','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '-3.7278','liquidationPrice': '2.244419487762','keepMarginRate': '0.01','markPrice': '0.8108','marginRatio': '0.023008182661','breakEvenPrice': '0.80802978213','totalFee': '','deductedFee': '1.0052634','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735460075396','uTime': '1735460075396'}
