@@ -863,7 +863,7 @@ while True:#暂时只做八小时一次的，方便后期维护
             bitget_mixtickers=bitget_mixtickers.nlargest(holdnum,'套利利润')
         bitget_mixtickers.to_csv("bitget合约行情信息.csv")
 
-        if (#在特定时间内才执行交易任务
+        if (#在特定时间内才执行交易任务【初步验证时间不用太细致，后面下单的时候还有精确到秒的二次验证】
             ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00)))
             or
             ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50)))
@@ -1121,12 +1121,12 @@ while True:#暂时只做八小时一次的，方便后期维护
                             # 【再次验证时间，只在合理时间内下单】
                             thisnow=(datetime.datetime.utcnow()+datetime.timedelta(hours=8)).time()
                             logger.info(f"thisnow,{thisnow}")
-                            if (#在特定时间内才执行交易任务
-                                ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00)))
+                            if (#在特定时间内才执行交易任务【最后3秒不交易，2秒撤单一般能够避免结算后交易的问题】后面看情况再去更改时间
+                                ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(7,59,57)))
                                 or
-                                ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50)))
+                                ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(15,59,57)))
                                 or
-                                (thisnow>datetime.time(23,58))
+                                ((thisnow>datetime.time(23,58))and(thisnow<datetime.time(23,59,57)))
                             ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
                             # if True:#【测试】
                                 # {'marginCoin': 'SUSDT','symbol': 'SEOSSUSDT','holdSide': 'short','openDelegateSize': '0','marginSize': '167.5439','available': '2071','locked': '0','total': '2071','leverage': '10','achievedProfits': '0','openPriceAvg': '0.809','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '-3.7278','liquidationPrice': '2.244419487762','keepMarginRate': '0.01','markPrice': '0.8108','marginRatio': '0.023008182661','breakEvenPrice': '0.80802978213','totalFee': '','deductedFee': '1.0052634','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735460075396','uTime': '1735460075396'}
@@ -1220,7 +1220,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                 thisdt=datetime.datetime.fromtimestamp(int(ctime)//1000,tz=datetime.timezone.utc)
                 logger.info(f"{thisdt}")
                 logger.info(f"{thistime-thisdt}")
-                if thistime-thisdt>=datetime.timedelta(seconds=3):#订单挂起超时1.5秒撤单
+                if thistime-thisdt>=datetime.timedelta(seconds=2):#订单挂起超时1.5秒撤单
                     logger.info(f"该订单挂起超时执行撤单")
                     # #【现货撤单】#10次/1s (UID)
                     # params={"symbol":thissymbol,
