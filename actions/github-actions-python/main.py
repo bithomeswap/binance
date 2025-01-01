@@ -212,52 +212,16 @@ def getsavingslist(coin):#10次/1s (Uid)
 #1.资金费率有个可能是挂单在资金结算完才成交，所以需要提前停止下单【比如3秒超时自动撤单就提前4秒停止下单】，避免成交较晚
 #2.可以尝试直接做合约的盘口价差套利，就是提供流动性的策略
 
-
-
 droplist=[]#仓位过重不再执行开仓的标的
-holdnum=3#选择需要交易标的的总数量
+holdnum=3#【持仓数量】选择需要交易标的的总数量
+trademoneyholdrate=holdnum*4#【最大持仓倍数】{持仓数量*4.如果单标的仓位等于总资产的话则总仓位是4倍的总资产}单个交易对的持仓金额超过trademoneyrate*trademoney后就不再执行交易
+traderate=1/2#【单次下单倍数】单笔下单金额的最大倍数原则上小于总资产*杠杆倍数，实际希望干脆小于总资产，也就是这个倍数小于1
+
 
 thisproductType="USDT-FUTURES"#【实盘】
 absrate=0.003#【实盘】
 # thisproductType="SUSDT-FUTURES"#【模拟盘】
 # absrate=-10#【模拟盘】之前这个值为0的时候容易遇到盘口价差过大导致默认不执行交易的问题
-
-
-
-if thisproductType=="USDT-FUTURES":
-    logger.info(f"当前为实盘，交易抵押物为USDT")
-    marginCoin='USDT'
-elif thisproductType=="SUSDT-FUTURES":
-    logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
-    marginCoin='SUSDT'
-params = {
-    # "symbol":str(thissymbol),
-    "productType":thisproductType,
-    #【productType参数说明】
-    # USDT-FUTURES USDT专业合约
-    # COIN-FUTURES 混合合约
-    # USDC-FUTURES USDC专业合约
-    # SUSDT-FUTURES USDT专业合约模拟盘
-    # SCOIN-FUTURES 混合合约模拟盘
-    # SUSDC-FUTURES USDC专业合约模拟盘
-    "marginCoin":marginCoin}
-request_path="/api/v2/mix/account/accounts"#合约资产余额
-res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
-logger.info(f"总账户合约资产余额,{type(res)},{res}")#unrealizedPL未实现盈亏
-# available#账户可用数量{应该是计提损益之前的账户权益}比权益小比保证金大
-# accountEquity#账户权益
-# crossedMaxAvailable#可用全仓保证金
-# isolatedMaxAvailable#可用逐仓保证金
-# usdtEquity#折算USDT权益
-mixbalance=[re["available"] for re in res if re["marginCoin"]==marginCoin][0]#返回的数据为字符串需要提前转float
-logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
-
-
-# #【如果之前的任务当中获取到实盘的金额进行了模拟盘的交易就会导致报错】
-trademoney=float(200)#【实盘】单次下单最大金额USDT{一般为总资产的余额即可}【实盘无法交易是因为初始化的时候合约余额为0】
-trademoneyrate=holdnum*4#【最大持仓倍数】单个交易对的持仓金额超过trademoneyrate*trademoney后就不再执行交易
-#【上述代码当中其实杠杆后的持仓金额是总资产的4倍左右】问题1为何会有ETH，问题2xrp为何不继续执行了？
-
 
 
 # #【设置保证金模式】逐仓还是全仓{下单的时候可以单独指定，无需在这里设置}
@@ -654,6 +618,35 @@ while True:#暂时只做八小时一次的，方便后期维护
         #     logger.info(f"清仓处理整体报错,{e}")
 
     else:#不在目标时间内则执行选股任务【与交易时间空出来10分钟，所有交易在这10分钟内完成即可】
+        #【计算当前总资产作为单标的最大仓位】
+        if thisproductType=="USDT-FUTURES":
+            logger.info(f"当前为实盘，交易抵押物为USDT")
+            marginCoin='USDT'
+        elif thisproductType=="SUSDT-FUTURES":
+            logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
+            marginCoin='SUSDT'
+        params = {
+            # "symbol":str(thissymbol),
+            "productType":thisproductType,
+            #【productType参数说明】
+            # USDT-FUTURES USDT专业合约
+            # COIN-FUTURES 混合合约
+            # USDC-FUTURES USDC专业合约
+            # SUSDT-FUTURES USDT专业合约模拟盘
+            # SCOIN-FUTURES 混合合约模拟盘
+            # SUSDC-FUTURES USDC专业合约模拟盘
+            "marginCoin":marginCoin}
+        request_path="/api/v2/mix/account/accounts"#合约资产余额
+        res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
+        logger.info(f"总账户合约资产余额,{type(res)},{res}")#unrealizedPL未实现盈亏
+        # available#账户可用数量{应该是计提损益之前的账户权益}比权益小比保证金大
+        # accountEquity#账户权益
+        # crossedMaxAvailable#可用全仓保证金
+        # isolatedMaxAvailable#可用逐仓保证金
+        # usdtEquity#折算USDT权益
+        mixbalance=[re["available"] for re in res if re["marginCoin"]==marginCoin][0]#返回的数据为字符串需要提前转float
+        logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
+        trademoney=float(mixbalance)#【实盘】单次下单最大金额USDT{一般为总资产的余额即可}【实盘无法交易是因为初始化的时候合约余额为0】
         try:
             if thisproductType=="USDT-FUTURES":#只在实盘赎回理财产品
                 logger.info(f"赎回活期理财产品执行开仓")
@@ -912,9 +905,9 @@ while True:#暂时只做八小时一次的，方便后期维护
                             thisleverage=int(thisposition["leverage"])#杠杆倍数
                             thisavailable=float(thisposition["available"])#可用余额【已经乘以杠杆倍数了】
                             thisopenPriceAvg=float(thisposition["openPriceAvg"])#开仓均价
-                            if (thisavailable*thisopenPriceAvg)>trademoney*trademoneyrate:#另外需要考虑仓位问题，这个是一倍杠杆下的金额，实际上是多倍杠杆，因而可用扩大很多倍数
+                            if (thisavailable*thisopenPriceAvg)>trademoney*trademoneyholdrate:#另外需要考虑仓位问题，这个是一倍杠杆下的金额，实际上是多倍杠杆，因而可用扩大很多倍数
                                 droplist.append(str(thissymbol))#总仓位达到余额的一半则将该标的列为不可交易标的，不再进行开仓
-                            logger.info(f"【仓位已满】,{thissymbol},标的余额,{thisavailable}*{thisopenPriceAvg},最大持仓金额设置为,{trademoney*trademoneyrate},droplist,{droplist}")
+                            logger.info(f"【仓位已满】,{thissymbol},标的余额,{thisavailable}*{thisopenPriceAvg},最大持仓金额设置为,{trademoney*trademoneyholdrate},droplist,{droplist}")
                         else:
                             thisavailable=0
                             logger.info(f"【没有持仓】,{thissymbol},标的余额【默认为0】,{thisavailable}")
@@ -1090,7 +1083,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                             #【根据可下单数量计算可下单金额与单笔最大金额对比控制单笔下单金额】
                             maxmoney=maxvolume*buyprice
                             #计算下单数量【这里不一定是对的，有时候比可开金额要大】
-                            if maxmoney>trademoney:#当maxmoney大于trademoney的时候按照trademoney
+                            if maxmoney>trademoney*traderate:#当maxmoney大于trademoney的时候按照trademoney
                                 buymoney=trademoney#这里在实盘显示的0，也就是目标下单
                                 logger.info(f"trademoney,{trademoney}")
                             else:#当maxmoney小于等于于trademoney的时候按照maxmoney
