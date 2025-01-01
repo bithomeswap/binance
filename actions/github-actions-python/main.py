@@ -212,7 +212,7 @@ droplist=[]#仓位过重不再执行开仓的标的
 holdnum=2#选择需要交易标的的总数量
 
 thisproductType="USDT-FUTURES"#【实盘】
-absrate=0.005#【实盘】
+absrate=0.003#【实盘】
 # thisproductType="SUSDT-FUTURES"#【模拟盘】
 # absrate=-10#【模拟盘】之前这个值为0的时候容易遇到盘口价差过大导致默认不执行交易的问题
 
@@ -411,7 +411,7 @@ while True:#暂时只做八小时一次的，方便后期维护
     # if True:#【测试平仓】
     # if False:#【测试开仓】
         # try:
-            # try:
+            try:
                 droplist=[]#仓位过重不再执行开仓的标的【重置】
                 for mixposition in mixpositions:
                     logger.info(f"mixposition,{mixposition}")
@@ -574,11 +574,11 @@ while True:#暂时只做八小时一次的，方便后期维护
                         #最小下单金额为1USDT
                         thisorder=client._request_with_params(params=params,request_path=request_path,method="POST")
                         logger.info(f"thisorder,{thisorder}")#如果执行了下单这里返回一个order详情{包含下单是否成功的返回值}
-            # except Exception as e:
-            #     logger.info(f"清仓卖出模块报错{e}")
+            except Exception as e:
+                logger.info(f"清仓卖出模块报错{e}")
 
             # #【空闲时余额转到现货进行理财】
-            # try:
+            try:
                 if thisproductType=="USDT-FUTURES":#只在实盘申购理财产品
                     params = {
                         # "symbol":str(thissymbol),
@@ -631,7 +631,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                         logger.info(f"{savingslist},{type(savingslist)}")
                         usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
                         logger.info(f"{usdtproductId},{type(usdtproductId)}")
-                        #【申购理财产品】10次/1s (Uid)
+                        #【申购理财产品】10次/1s (Uid)转回来申购理财产品的时候容易余额不足
                         request_path="/api/v2/earn/savings/subscribe"
                         params={"productId":usdtproductId,
                                 "periodType":"flexible",#只要活期存款
@@ -642,11 +642,11 @@ while True:#暂时只做八小时一次的，方便后期维护
                         logger.info(f"申购理财产品,{res}")
                     else:
                         logger.info(f"余额不足不进行申购")
-            # except Exception as e:
-            #     logger.info(f"闲置资金活期理财报错,{e}")
+            except Exception as e:#【理财申购后现货余额需要一定时间才能改变因而这里可能因为重复执行而报错】
+                logger.info(f"闲置资金活期理财报错,{e}")
+            time.sleep(0.5)#避免重复申购导致报错
         # except Exception as e:
         #     logger.info(f"清仓处理整体报错,{e}")
-            
 
     else:#不在目标时间内则执行选股任务【与交易时间空出来10分钟，所有交易在这10分钟内完成即可】
         try:
@@ -834,13 +834,12 @@ while True:#暂时只做八小时一次的，方便后期维护
         #【盘口价差限制、买卖一档总金额限制】
         # bitget_mixtickers=bitget_mixtickers[bitget_mixtickers["买一额"]>100]
         # bitget_mixtickers=bitget_mixtickers[bitget_mixtickers["卖一额"]>100]
-        # bitget_mixtickers=bitget_mixtickers[(bitget_mixtickers["卖一额"]+bitget_mixtickers["买一额"])>200]#【实盘要用】【盘口的挂单金额严重影响收益率】买卖总金额大于500还能有不少标的可以选择
+        bitget_mixtickers=bitget_mixtickers[(bitget_mixtickers["卖一额"]+bitget_mixtickers["买一额"])>200]#【实盘要用】【盘口的挂单金额严重影响收益率】买卖总金额大于500还能有不少标的可以选择
         bitget_mixtickers=bitget_mixtickers[bitget_mixtickers["盘口价差"]<0.002]#【实盘要用】
         bitget_mixtickers["资金费率"]=bitget_mixtickers["资金费率"].astype(float)
         bitget_mixtickers["资金费率绝对值"]=abs(bitget_mixtickers["资金费率"])
         bitget_mixtickers["套利利润"]=bitget_mixtickers["资金费率绝对值"]-bitget_mixtickers["盘口价差"]
-        # bitget_mixtickers=bitget_mixtickers[bitget_mixtickers["套利利润"]>0]#【实盘要用】优先做费率利润大于盘口价差+手续费的
-        # bitget_mixtickers=bitget_mixtickers[bitget_mixtickers["套利利润"]>0.001]#【实盘要用】优先做费率利润大于盘口价差+手续费的
+        bitget_mixtickers=bitget_mixtickers[bitget_mixtickers["套利利润"]>0]#【实盘要用】优先做费率利润大于盘口价差+手续费的
         bitget_mixtickers=bitget_mixtickers.sort_values(by="套利利润")#有一些标的的费率小于盘口价差（滑点），所以这里总共可交易的标的数量比实际的少
 
         # #【结合期货现货价差看期货资金费率】
@@ -877,7 +876,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                 thissymbol=info["symbol"]
                 rate=info["资金费率"]
                 logger.info(f"thissymbol,{thissymbol},资金费率绝对值,rate,{rate},{type(rate)},abs(rate),{abs(rate)},{type(abs(rate))}")
-                #【资金费率绝对值的底线】
+                #【资金费率绝对值的底线】之前的交易没有执行核心原因就是这个absrate设置的太高临近交易的时候实现不了
                 if (abs(rate)>absrate):#只做资金费率绝对值大于某个值的标的
                     #【仓位控制模块】
                     try:# 这个仓位管理模块可以单独执行，在这里根据当前仓位填充droplist，卖出的部分重置droplist，买入的部分验证droplist，如果在开仓时间内才计算仓位进行填充，空仓时间内只减仓不验证影响不大
