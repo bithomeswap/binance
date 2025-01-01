@@ -579,79 +579,69 @@ while True:#暂时只做八小时一次的，方便后期维护
 
             # #【空闲时余额转到现货进行理财】
             # try:
-                if thisproductType=="USDT-FUTURES":
-                    logger.info(f"当前为实盘，交易抵押物为USDT")
-                    marginCoin='USDT'
-                elif thisproductType=="SUSDT-FUTURES":
-                    logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
-                    marginCoin='SUSDT'
-                params = {
-                    # "symbol":str(thissymbol),
-                    "productType":thisproductType,
-                    #【productType参数说明】
-                    # USDT-FUTURES USDT专业合约
-                    # COIN-FUTURES 混合合约
-                    # USDC-FUTURES USDC专业合约
-                    # SUSDT-FUTURES USDT专业合约模拟盘
-                    # SCOIN-FUTURES 混合合约模拟盘
-                    # SUSDC-FUTURES USDC专业合约模拟盘
-                    "marginCoin":marginCoin}
-                request_path="/api/v2/mix/account/accounts"#合约资产余额
-                res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
-                logger.info(f"总账户合约资产余额,{type(res)},{res}")#unrealizedPL未实现盈亏
-                # available#账户可用数量{应该是计提损益之前的账户权益}比权益小比保证金大
-                # accountEquity#账户权益
-                # crossedMaxAvailable#可用全仓保证金
-                # isolatedMaxAvailable#可用逐仓保证金
-                mixbalance=[re["available"] for re in res if re["marginCoin"]==marginCoin][0]#返回的数据为字符串需要提前转float
-                logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
-                if float(mixbalance)>=1:
-                    request_path="/api/v2/spot/wallet/transfer"
-                    params={
-                        "fromType":"usdt_futures",
-                        "toType":"spot",
-                        # 转入账户类型
-                        # spot 现货账户
-                        # p2p P2P/资金账户
-                        # coin_futures 币本位合约账户
-                        # usdt_futures U本位合约账户
-                        # usdc_futures USDC合约账户
-                        # crossed_margin 全仓杠杆账户
-                        # isolated_margin 逐仓杠杆账户
-                        "amount":mixbalance,
-                        "coin":"USDT",
-                        }
-                    res=client._request_with_params(params=params,request_path=request_path,method="POST")["data"]#quantityScale可能是精度
-                    logger.info(f"资产划转,{float(mixbalance)},{res},{len(res)}")
-                else:
-                    logger.info(f"余额不足不进行资产划转【合约转现货】,{float(mixbalance)}")
-            # except Exception as e:
-            #     logger.info(f"清仓余额转现货报错{e}")
-
-            # #【现货理财采用自动申购模式，避免手动干预无法微操】
-            # try:
-                #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
-                spotbalance=getspotbalance(coin="USDT")
-                usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-                logger.info(f"{usdtbalance},{type(usdtbalance)}")
-                if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
-                    logger.info(f"余额大于1USDT执行理财申购")
-                    #【获取理财产品列表】#10次/1s (Uid)
-                    savingslist=getsavingslist(coin="USDT")
-                    logger.info(f"{savingslist},{type(savingslist)}")
-                    usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
-                    logger.info(f"{usdtproductId},{type(usdtproductId)}")
-                    #【申购理财产品】10次/1s (Uid)
-                    request_path="/api/v2/earn/savings/subscribe"
-                    params={"productId":usdtproductId,
-                            "periodType":"flexible",#只要活期存款
-                            "amount":usdtbalance
+                if thisproductType=="USDT-FUTURES":#只在实盘申购理财产品
+                    params = {
+                        # "symbol":str(thissymbol),
+                        "productType":thisproductType,
+                        #【productType参数说明】
+                        # USDT-FUTURES USDT专业合约
+                        # COIN-FUTURES 混合合约
+                        # USDC-FUTURES USDC专业合约
+                        # SUSDT-FUTURES USDT专业合约模拟盘
+                        # SCOIN-FUTURES 混合合约模拟盘
+                        # SUSDC-FUTURES USDC专业合约模拟盘
+                        "marginCoin":marginCoin}
+                    request_path="/api/v2/mix/account/accounts"#合约资产余额
+                    res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
+                    logger.info(f"总账户合约资产余额,{type(res)},{res}")#unrealizedPL未实现盈亏
+                    # available#账户可用数量{应该是计提损益之前的账户权益}比权益小比保证金大
+                    # accountEquity#账户权益
+                    # crossedMaxAvailable#可用全仓保证金
+                    # isolatedMaxAvailable#可用逐仓保证金
+                    mixbalance=[re["available"] for re in res if re["marginCoin"]==marginCoin][0]#返回的数据为字符串需要提前转float
+                    logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
+                    if float(mixbalance)>=1:
+                        request_path="/api/v2/spot/wallet/transfer"
+                        params={
+                            "fromType":"usdt_futures",
+                            "toType":"spot",
+                            # 转入账户类型
+                            # spot 现货账户
+                            # p2p P2P/资金账户
+                            # coin_futures 币本位合约账户
+                            # usdt_futures U本位合约账户
+                            # usdc_futures USDC合约账户
+                            # crossed_margin 全仓杠杆账户
+                            # isolated_margin 逐仓杠杆账户
+                            "amount":mixbalance,
+                            "coin":"USDT",
                             }
-                    res=client._request_with_params(params=params,request_path=request_path,method="POST")
-                    res=res["data"]
-                    logger.info(f"申购理财产品,{res}")
-                else:
-                    logger.info(f"余额不足不进行申购")
+                        res=client._request_with_params(params=params,request_path=request_path,method="POST")["data"]#quantityScale可能是精度
+                        logger.info(f"资产划转,{float(mixbalance)},{res},{len(res)}")
+                    else:
+                        logger.info(f"余额不足不进行资产划转【合约转现货】,{float(mixbalance)}")
+                    #【查询现货余额并转入理财账户】卖出大概一秒左右就转到理财账户了
+                    spotbalance=getspotbalance(coin="USDT")
+                    usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
+                    logger.info(f"{usdtbalance},{type(usdtbalance)}")
+                    if float(usdtbalance)>=1:#现货资产余额大于等于1的时候进行活期理财申购{避免余额不足报错}【验证后是对的，usdtbalance="0"时usdtbalance="0"验证为False】
+                        logger.info(f"余额大于1USDT执行理财申购")
+                        #【获取理财产品列表】#10次/1s (Uid)
+                        savingslist=getsavingslist(coin="USDT")
+                        logger.info(f"{savingslist},{type(savingslist)}")
+                        usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
+                        logger.info(f"{usdtproductId},{type(usdtproductId)}")
+                        #【申购理财产品】10次/1s (Uid)
+                        request_path="/api/v2/earn/savings/subscribe"
+                        params={"productId":usdtproductId,
+                                "periodType":"flexible",#只要活期存款
+                                "amount":usdtbalance
+                                }
+                        res=client._request_with_params(params=params,request_path=request_path,method="POST")
+                        res=res["data"]
+                        logger.info(f"申购理财产品,{res}")
+                    else:
+                        logger.info(f"余额不足不进行申购")
             # except Exception as e:
             #     logger.info(f"闲置资金活期理财报错,{e}")
         # except Exception as e:
@@ -660,52 +650,53 @@ while True:#暂时只做八小时一次的，方便后期维护
 
     else:#不在目标时间内则执行选股任务【与交易时间空出来10分钟，所有交易在这10分钟内完成即可】
         try:
-            logger.info(f"近期有新出上市公告赎回活期理财产品买入现货")
-            #【理财资产信息】10次/1s (Uid)查询活期存款持仓对其进行赎回
-            request_path="/api/v2/earn/savings/assets"
-            params = {"periodType":"flexible",}#只要活期存款
-            savingsList=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]["resultList"]
-            logger.info(f"{savingsList}")
-            for savings in savingsList:
-                thisproductId=savings['productId']
-                thisorderId=savings['orderId']
-                thisholdAmount=savings["holdAmount"]
-                logger.info(f"thisproductId,{thisproductId},{type(thisproductId)},thisholdAmount,{thisholdAmount},{type(thisholdAmount)}")
-                #【赎回理财产品】10次/1s (Uid)
-                request_path="/api/v2/earn/savings/redeem"
-                params = {"productId":thisproductId,
-                        "orderId":thisorderId,
-                        "periodType":"flexible",#只要活期存款
-                        "amount":thisholdAmount,
+            if thisproductType=="USDT-FUTURES":#只在实盘赎回理财产品
+                logger.info(f"赎回活期理财产品执行开仓")
+                #【理财资产信息】10次/1s (Uid)查询活期存款持仓对其进行赎回
+                request_path="/api/v2/earn/savings/assets"
+                params = {"periodType":"flexible",}#只要活期存款
+                savingsList=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]["resultList"]
+                logger.info(f"{savingsList}")
+                for savings in savingsList:
+                    thisproductId=savings['productId']
+                    thisorderId=savings['orderId']
+                    thisholdAmount=savings["holdAmount"]
+                    logger.info(f"thisproductId,{thisproductId},{type(thisproductId)},thisholdAmount,{thisholdAmount},{type(thisholdAmount)}")
+                    #【赎回理财产品】10次/1s (Uid)
+                    request_path="/api/v2/earn/savings/redeem"
+                    params = {"productId":thisproductId,
+                            "orderId":thisorderId,
+                            "periodType":"flexible",#只要活期存款
+                            "amount":thisholdAmount,
+                            }
+                    res=client._request_with_params(params=params,request_path=request_path,method="POST")
+                    res=res["data"]
+                    logger.info(f"赎回理财产品,{res}")
+                #【查询现货USDT余额】对赎回后的USDT余额进行统计方便后面计算下单金额
+                spotbalance=getspotbalance(coin="USDT")
+                usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
+                logger.info(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
+                if float(usdtbalance)>=1:#只有有余额才划转没余额不必划转
+                    #【划转回期货账户】            
+                    request_path="/api/v2/spot/wallet/transfer"
+                    params={
+                        "fromType":"spot",
+                        "toType":"usdt_futures",
+                        # 转入账户类型
+                        # spot 现货账户
+                        # p2p P2P/资金账户
+                        # coin_futures 币本位合约账户
+                        # usdt_futures U本位合约账户
+                        # usdc_futures USDC合约账户
+                        # crossed_margin 全仓杠杆账户
+                        # isolated_margin 逐仓杠杆账户
+                        "amount":usdtbalance,
+                        "coin":"USDT",
                         }
-                res=client._request_with_params(params=params,request_path=request_path,method="POST")
-                res=res["data"]
-                logger.info(f"赎回理财产品,{res}")
-            #【查询现货USDT余额】对赎回后的USDT余额进行统计方便后面计算下单金额
-            spotbalance=getspotbalance(coin="USDT")
-            usdtbalance=[balance for balance in spotbalance if balance["coin"]=="USDT"][0]["available"]
-            logger.info(f"usdtbalance,{usdtbalance},{type(usdtbalance)}")
-            if float(usdtbalance)>=1:#只有有余额才划转没余额不必划转
-                #【划转回期货账户】            
-                request_path="/api/v2/spot/wallet/transfer"
-                params={
-                    "fromType":"spot",
-                    "toType":"usdt_futures",
-                    # 转入账户类型
-                    # spot 现货账户
-                    # p2p P2P/资金账户
-                    # coin_futures 币本位合约账户
-                    # usdt_futures U本位合约账户
-                    # usdc_futures USDC合约账户
-                    # crossed_margin 全仓杠杆账户
-                    # isolated_margin 逐仓杠杆账户
-                    "amount":usdtbalance,
-                    "coin":"USDT",
-                    }
-                res=client._request_with_params(params=params,request_path=request_path,method="POST")["data"]#quantityScale可能是精度
-                logger.info(f"资产划转,{float(usdtbalance)},{res},{len(res)}")
-            else:
-                logger.info(f"余额不足不进行资产划转【现货转合约】,{float(usdtbalance)}")
+                    res=client._request_with_params(params=params,request_path=request_path,method="POST")["data"]#quantityScale可能是精度
+                    logger.info(f"资产划转,{float(usdtbalance)},{res},{len(res)}")
+                else:
+                    logger.info(f"余额不足不进行资产划转【现货转合约】,{float(usdtbalance)}")
         except Exception as e:
             logger.info(f"理财赎回并划转期货账户报错{e}")
 
@@ -880,7 +871,6 @@ while True:#暂时只做八小时一次的，方便后期维护
             or
             (thisnow>datetime.time(23,58))
         ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
-        # if True:#【测试】
             logger.info(f"bitget_mixtickers,{bitget_mixtickers}")
             #【做多逻辑】
             for index,info in bitget_mixtickers.iterrows():
