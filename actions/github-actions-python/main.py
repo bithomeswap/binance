@@ -26,8 +26,6 @@ api_secret='b0682a6e4a0e0c50493a4be19b4f56de4fa81f07d6e7d010a71e1971a7c3bbb4'#�
 api_passphrase="wthWTH00"
 client=Client(api_key,api_secret,passphrase=api_passphrase)
 
-
-
 #【获取现货账户余额】
 def getspotbalance(coin):
     request_path="/api/v2/spot/account/assets"
@@ -53,158 +51,10 @@ def getsavingslist(coin):#10次/1s (Uid)
     res=[r for r in res if r["periodType"]=="flexible"]#只要活期存款
     # logger.info(f"res,{type(res)},{res}")
     return res
-
 # savingslist=getsavingslist(coin="USDT")#10次/1s (Uid)
 # logger.info(f"savingslist,{savingslist},{type(savingslist)}")
 # usdtproductId=str(savingslist[0]["productId"])#取出来产品ID
 # logger.info(f"usdtproductId,{usdtproductId},{type(usdtproductId)}")
-
-
-
-# #【获取公告数据】
-# # annType	String	否	公告类型
-# # latest_news: 最新活动
-# # coin_listings: 新币上线
-# # trading_competitions_promotions: 交易比赛和活动
-# # maintenance_system_updates: 维护/系统升级
-# # symbol_delisting: 下架资讯
-# # startTime	String	否	查询的开始时间，Unix毫秒时间戳，例如1690196141868
-# # 按照对外展示时间查询
-# # endTime	String	否	查询的结束时间，Unix毫秒时间戳，例如1690196141868
-# # 按照对外展示时间查询
-# # language	String	是	语言类型
-# # zh_CN中文
-# # en_US英文
-# # 如果传入的语言类型不支持，则返回英文
-# params={"language":'zh_CN'}
-# request_path="/api/v2/public/annoucements"
-# df=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-# df=pd.DataFrame(df)
-# logger.info(df)
-# df.to_csv("bitget公告.csv")
-
-
-
-# #【获取coin信息】
-# request_path="/api/v2/spot/public/coins"
-# params={}
-# bitget_coins_info=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
-# bitget_coins_info=pd.DataFrame(bitget_coins_info)
-# alldf=pd.DataFrame({})
-# for index,thiinfo in bitget_coins_info.iterrows():
-#     # logger.info(index,thiinfo)
-#     thiscoin=thiinfo["coin"]
-#     thistransfer=thiinfo["transfer"]
-#     thisdf=pd.DataFrame(thiinfo["chains"])
-#     thisdf["coin"]=thiscoin
-#     thisdf["transfer"]=thistransfer
-#     # logger.info(thisdf)
-#     alldf=pd.concat([alldf,thisdf])
-# alldf=alldf.rename(columns={
-#     # "coin":"base",
-#     "transfer":"是否可以划转",
-#     "chain":"链名称",#	Array	
-#     "needTag":"是否需要tag",#Boolean	
-#     "withdrawable":"是否可提现",
-#     "rechargeable":"是否可充值",
-#     "withdrawFee":"提现手续费",
-#     "extraWithdrawFee":"链上转账销毁",#额外收取,链上转账销毁，0.1表示10%
-#     "depositConfirm":"充值确认块数",
-#     "withdrawConfirm":"提现确认块数",
-#     "minDepositAmount":"最小充值数",
-#     "minWithdrawAmount":"最小提现数",
-#     "browserUrl":"区块浏览器地址",
-#     "contractAddress":"币种合约地址",
-#     "withdrawStep":"提币步长",
-#         # 非0，代表提币数量需满足步长倍数
-#         # 为0，代表没有步长倍数的限制
-#     "withdrawMinScale":"提币数量精度",
-#     "congestion":"链网络拥堵情况",
-#         # "normal": 正常
-#         # "congested": 拥堵
-#     # 返回字段	参数类型	字段说明
-#     # coinId	String	币种ID
-#     # coin	String	币种名称
-#     # transfer	Boolean	是否可以划转
-#     # chains	Array	支持的链列表
-#     # > chain	String	链名称
-#     # > needTag	Boolean	是否需要tag
-#     # > withdrawable	Boolean	是否可提现
-#     # > rechargeable	Boolean	是否可充值
-#     # > withdrawFee	String	提现手续费
-#     # > extraWithdrawFee	String	额外收取,链上转账销毁，0.1表示10%
-#     # > depositConfirm	String	充值确认块数
-#     # > withdrawConfirm	String	提现确认块数
-#     # > minDepositAmount	String	最小充值数
-#     # > minWithdrawAmount	String	最小提现数
-#     # > browserUrl	String	区块浏览器地址
-#     # > contractAddress	String	币种合约地址
-#     # > withdrawStep	String	提币步长
-#     # 非0，代表提币数量需满足步长倍数
-#     # 为0，代表没有步长倍数的限制
-#     # > withdrawMinScale	String	提币数量精度
-#     # > congestion	String	链网络拥堵情况
-#     # normal: 正常
-#     # congested: 拥堵
-#     })
-# logger.info(alldf,type(alldf))
-# alldf.to_csv("bitget币种信息symbol.csv")
-
-
-
-# #【获取symbol详情】这个不需要详情因为不参与交易
-# request_path="/api/v2/spot/public/symbols"
-# params={}
-# bitget_symbols_info=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
-# bitget_symbols_info=pd.DataFrame(bitget_symbols_info)
-# # #获取交易对信息
-# # url="https://api.bitget.com/api/v2/spot/public/symbols"
-# # bitget_symbols_info=pd.DataFrame(requests.get(url).json()["data"])
-# bitget_symbols_info=bitget_symbols_info.rename(columns={
-#     # symbol:交易对名称
-#     "baseCoin":"基础币",#如交易对"BTCUSDT"中的"BTC"
-#     "quoteCoin":"计价货币",#例如交易对"BTCUSDT"中的"USDT"
-#     "minTradeAmount":"最小交易数量",
-#     "maxTradeAmount":"最大交易数量",
-#     "takerFeeRate":"默认吃单手续费率",#可被个人交易手续费率覆盖
-#     "makerFeeRate":"默认挂单手续费率",#可被个人交易手续费率覆盖
-#     "pricePrecision":"价格精度",
-#     "quantityPrecision":"数量精度",
-#     "quotePrecision":"右币精度",
-#     "minTradeUSDT":"最小USDT交易额",
-#     "status":"上架状态",
-#         # offline: 维护
-#         # gray: 灰度
-#         # online: 上线
-#         # halt: 停盘
-#     "buyLimitPriceRatio":"买入与现价的价差百分比",#小数形式    如 0.05 表示: 5%
-#     "sellLimitPriceRatio":"卖出与现价的价差百分比",#小数形式    如 0.05 表示: 5%
-#     # 返回字段	参数类型	字段说明
-#     # symbol	String	交易对名称
-#     # baseCoin	String	基础币，如交易对"BTCUSDT"中的"BTC"
-#     # quoteCoin	String	计价货币，例如交易对"BTCUSDT"中的"USDT"
-#     # minTradeAmount	String	最小交易数量
-#     # maxTradeAmount	String	最大交易数量
-#     # takerFeeRate	String	默认吃单手续费率，可被个人交易手续费率覆盖
-#     # makerFeeRate	String	默认挂单手续费率，可被个人交易手续费率覆盖
-#     # pricePrecision	String	价格精度
-#     # quantityPrecision	String	数量精度
-#     # quotePrecision	String	右币精度
-#     # minTradeUSDT	String	最小USDT交易额
-#     # status	String	上架状态
-#     # offline: 维护
-#     # gray: 灰度
-#     # online: 上线
-#     # halt: 停盘
-#     # buyLimitPriceRatio	String	买入与现价的价差百分比,小数形式
-#     # 如 0.05 表示: 5%
-#     # sellLimitPriceRatio	String	卖出与现价的价差百分比,小数形式
-#     # 如 0.05 表示: 5%
-# })
-# bitget_symbols_info["coin"]=bitget_symbols_info["symbol"].str.replace("USDT","").replace("USDC","")
-# # alldf=bitget_symbols_info.merge(alldf,on="coin")
-# logger.info(bitget_symbols_info)
-# bitget_symbols_info.to_csv("bitget交易对信息.csv")
 
 
 
@@ -698,8 +548,6 @@ while True:#暂时只做八小时一次的，方便后期维护
                     logger.info(f"余额不足不进行资产划转【现货转合约】,{float(usdtbalance)}")
         except Exception as e:
             logger.info(f"理财赎回并划转期货账户报错{e}")
-
-
             
         # #【获取现货行情】这个是比对期现价差用的
         # request_path="/api/v2/spot/market/tickers"
@@ -861,31 +709,99 @@ while True:#暂时只做八小时一次的，方便后期维护
             logger.info(f"只保留套利利润最大的{holdnum}个数据")
             bitget_mixtickers=bitget_mixtickers.nlargest(holdnum,'套利利润')
         bitget_mixtickers.to_csv("bitget合约行情信息.csv")
-
-        if (#在特定时间内才执行交易任务【初步验证时间不用太细致，后面下单的时候还有精确到秒的二次验证】
-            ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(8,00)))
-            or
-            ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(16,50)))
-            or
-            (thisnow>datetime.time(23,58))
-        ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
-            logger.info(f"bitget_mixtickers,{bitget_mixtickers}")
-            #【做多逻辑】
-            for index,info in bitget_mixtickers.iterrows():
-                thissymbol=info["symbol"]
-                rate=info["资金费率"]
-                logger.info(f"thissymbol,{thissymbol},资金费率绝对值,rate,{rate},{type(rate)},abs(rate),{abs(rate)},{type(abs(rate))}")
-                #【资金费率绝对值的底线】之前的交易没有执行核心原因就是这个absrate设置的太高临近交易的时候实现不了
-                if (abs(rate)>absrate):#只做资金费率绝对值大于某个值的标的
-                    #【仓位控制模块】
-                    try:# 这个仓位管理模块可以单独执行，在这里根据当前仓位填充droplist，卖出的部分重置droplist，买入的部分验证droplist，如果在开仓时间内才计算仓位进行填充，空仓时间内只减仓不验证影响不大
-                        #获取单个标的的仓位信息
-                        if thisproductType=="USDT-FUTURES":
-                            logger.info(f"当前为实盘，交易抵押物为USDT")
-                            marginCoin='USDT'
-                        elif thisproductType=="SUSDT-FUTURES":
-                            logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
-                            marginCoin='SUSDT'
+        logger.info(f"bitget_mixtickers,{bitget_mixtickers}")
+        #【做多逻辑】
+        for index,info in bitget_mixtickers.iterrows():
+            thissymbol=info["symbol"]
+            rate=info["资金费率"]
+            logger.info(f"thissymbol,{thissymbol},资金费率绝对值,rate,{rate},{type(rate)},abs(rate),{abs(rate)},{type(abs(rate))}")
+            #【资金费率绝对值的底线】之前的交易没有执行核心原因就是这个absrate设置的太高临近交易的时候实现不了
+            if (abs(rate)>absrate):#只做资金费率绝对值大于某个值的标的
+                #【仓位控制模块】
+                try:# 这个仓位管理模块可以单独执行，在这里根据当前仓位填充droplist，卖出的部分重置droplist，买入的部分验证droplist，如果在开仓时间内才计算仓位进行填充，空仓时间内只减仓不验证影响不大
+                    #获取单个标的的仓位信息
+                    if thisproductType=="USDT-FUTURES":
+                        logger.info(f"当前为实盘，交易抵押物为USDT")
+                        marginCoin='USDT'
+                    elif thisproductType=="SUSDT-FUTURES":
+                        logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
+                        marginCoin='SUSDT'
+                    params={
+                        "productType":thisproductType,
+                        #【productType参数说明】
+                        # USDT-FUTURES USDT专业合约
+                        # COIN-FUTURES 混合合约
+                        # USDC-FUTURES USDC专业合约
+                        # SUSDT-FUTURES USDT专业合约模拟盘
+                        # SCOIN-FUTURES 混合合约模拟盘
+                        # SUSDC-FUTURES USDC专业合约模拟盘
+                        "symbol":str(thissymbol),
+                        "marginCoin":marginCoin,
+                        }
+                    request_path="/api/v2/mix/position/single-position"#【单个标的的持仓信息】
+                    mixposition=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                    logger.info(f"thismixposition,{mixposition}")# [{'marginCoin': 'SUSDT','symbol': 'SBTCSUSDT','holdSide': 'long','openDelegateSize': '0','marginSize': '369.12291','available': '0.039','locked': '0','total': '0.039','leverage': '10','achievedProfits': '0','openPriceAvg': '94646.9','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '0.6396','liquidationPrice': '18801.660351978073','keepMarginRate': '0.004','markPrice': '94663.3','marginRatio': '0.01749097777','breakEvenPrice': '94760.544466680009','totalFee': '','deductedFee': '2.21473746','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735394735040','uTime': '1735394735040'},{'marginCoin': 'SUSDT','symbol': 'SETHSUSDT','holdSide': 'long','openDelegateSize': '0','marginSize': '632.92456','available': '1.88','locked': '0','total': '1.88','leverage': '10','achievedProfits': '0','openPriceAvg': '3366.62','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '0.2632','liquidationPrice': '1791.45190866726','keepMarginRate': '0.005','markPrice': '3366.76','marginRatio': '0.01749097777','breakEvenPrice': '3369.314912947769','totalFee': '','deductedFee': '1.26584912','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735394707905','uTime': '1735394708143'}]            
+                    if len(mixposition)>0:
+                        thisposition=mixposition[0]
+                        thisleverage=int(thisposition["leverage"])#杠杆倍数
+                        thisavailable=float(thisposition["available"])#可用余额【已经乘以杠杆倍数了】
+                        thisopenPriceAvg=float(thisposition["openPriceAvg"])#开仓均价
+                        if (thisavailable*thisopenPriceAvg)>trademoney*trademoneyholdrate:#另外需要考虑仓位问题，这个是一倍杠杆下的金额，实际上是多倍杠杆，因而可用扩大很多倍数
+                            droplist.append(str(thissymbol))#总仓位达到余额的一半则将该标的列为不可交易标的，不再进行开仓
+                            logger.info(f"【仓位已满】,{thissymbol},标的余额,{thisavailable}*{thisopenPriceAvg},最大持仓金额设置为,{trademoney*trademoneyholdrate},droplist,{droplist}")
+                    else:
+                        thisavailable=0
+                        logger.info(f"【没有持仓】,{thissymbol},标的余额【默认为0】,{thisavailable}")
+                except Exception as e:
+                    logger.info(f"仓位管理报错,{e}")
+                if(thissymbol not in droplist):#如果仓位已满则不再进行交易
+                    #【交易精度】#20次/1s (IP)
+                    # params={"symbol":thissymbol,}
+                    # request_path="/api/v2/spot/public/symbols"#现货
+                    params={"symbol":thissymbol,
+                        "productType":thisproductType,
+                        #【productType参数说明】
+                        # USDT-FUTURES USDT专业合约
+                        # COIN-FUTURES 混合合约
+                        # USDC-FUTURES USDC专业合约
+                        # SUSDT-FUTURES USDT专业合约模拟盘
+                        # SCOIN-FUTURES 混合合约模拟盘
+                        # SUSDC-FUTURES USDC专业合约模拟盘
+                        }
+                    request_path="/api/v2/mix/market/contracts"#合约
+                    thisinfo=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                    logger.info(f"thisinfo,{thisinfo}")# [{'symbol': 'BGBUSDT','baseCoin': 'BGB','quoteCoin': 'USDT','minTradeAmount': '0','maxTradeAmount': '10000000000','takerFeeRate': '0.001','makerFeeRate': '0.001','pricePrecision': '4','quantityPrecision': '4','quotePrecision': '8','status': 'online','minTradeUSDT': '1','buyLimitPriceRatio': '0.05','sellLimitPriceRatio': '0.05','areaSymbol': 'no','orderQuantity': '200'}]
+                    # [{'symbol': 'SBTCSUSDT','baseCoin': 'SBTC','quoteCoin': 'SUSDT','buyLimitPriceRatio': '0.01','sellLimitPriceRatio': '0.01','feeRateUpRatio': '0.1','makerFeeRate': '0.0002','takerFeeRate': '0.0006','openCostUpRatio': '0.1','supportMarginCoins': ['SUSDT'],'minTradeNum': '0.001','priceEndStep': '1','volumePlace': '3','pricePlace': '1','sizeMultiplier': '0.001','symbolType': 'perpetual','minTradeUSDT': '5','maxSymbolOrderNum': '200','maxProductOrderNum': '400','maxPositionNum': '150','symbolStatus': 'normal','offTime': '-1','limitOpenTime': '-1','deliveryTime': '','deliveryStartTime': '','deliveryPeriod': '','launchTime': '','fundInterval': '8','minLever': '1','maxLever': '125','posLimit': '0.05','maintainTime': '','openTime': ''}]
+                    if len(thisinfo)>0:#对于绝大部分可交易标的都存在其详情数据的len(thisinfo)>0，如果不存在则说明该标的不可交易
+                        # #【现货】
+                        # minTradeAmount=float(thisinfo[0]["minTradeAmount"])#最小交易数量
+                        # maxTradeAmount=float(thisinfo[0]["maxTradeAmount"])#最大交易数量
+                        # quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
+                        # pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
+                        # #【合约】
+                        minTradeAmount=float(thisinfo[0]["minTradeNum"])#最小开单数量(基础币)下单的时候两者都要超过
+                        minTradeAmountUSDT=float(thisinfo[0]["minTradeUSDT"])#最小开单数量(USDT)下单的时候两者都要超过
+                        quantityPrecision=int(thisinfo[0]["volumePlace"])#数量小数位数【类似于数量精度】
+                        pricePrecision=int(thisinfo[0]["pricePlace"])#价格小数位数【类似于价格精度】
+                        sizeMultiplier=float(thisinfo[0]["sizeMultiplier"])#数量乘数【买入时不用考虑卖出时需要考虑】下单数量要大于 minTradeNum 并且满足 sizeMulti 的倍数
+                        minLever=int(thisinfo[0]["minLever"])#String最小杠杆
+                        maxLever=int(thisinfo[0]["maxLever"])#String最大杠杆
+                        if (minLever<10)and(maxLever>10):
+                            thisLever=int(10)
+                            logger.info(f"默认10倍杠杆,{thisLever}")
+                        elif (minLever<5)and(maxLever>5):
+                            thisLever=int(5)
+                            logger.info(f"默认5倍杠杆,{thisLever}")
+                        else:
+                            thisLever=minLever
+                            logger.info(f"默认最小杠杆,{thisLever}")
+                        # 持仓限制【还有一个限制条件】
+                        logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
+                        # {'code': '00000','msg': 'success','requestTime': 1732951086595,'data': {'symbol': 'BTCUSDT_SPBL','symbolName': 'BTCUSDT','symbolDisplayName': 'BTCUSDT','baseCoin': 'BTC','baseCoinDisplayName': 'BTC','quoteCoin': 'USDT','quoteCoinDisplayName': 'USDT','minTradeAmount': '0','maxTradeAmount': '0','takerFeeRate': '0.002','makerFeeRate': '0.002','priceScale': '2','quantityScale': '6','quotePrecision': '8','status': 'online','minTradeUSDT': '1','buyLimitPriceRatio': '0.05','sellLimitPriceRatio': '0.05','maxOrderNum': '500'}}
+                        
+                        # 【盘口深度】#20次/1s (IP)
+                        # params={"symbol":str(thissymbol+"USDT"),"limit":'150',"type":'step0'}
+                        # request_path="/api/v2/spot/market/orderbook"#现货
                         params={
                             "productType":thisproductType,
                             #【productType参数说明】
@@ -895,30 +811,35 @@ while True:#暂时只做八小时一次的，方便后期维护
                             # SUSDT-FUTURES USDT专业合约模拟盘
                             # SCOIN-FUTURES 混合合约模拟盘
                             # SUSDC-FUTURES USDC专业合约模拟盘
+                            "symbol":str(thissymbol),"limit":'150',"type":'step0'}
+                        request_path="/api/v2/mix/market/orderbook"#合约
+                        thisdepth=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+                        # logger.info(thisdepth)#【能够获取合约深度数据】
+                        bid1=thisdepth["bids"][0][0]#买一
+                        bid1v=thisdepth["bids"][0][1]
+                        ask1=thisdepth["asks"][0][0]#卖一
+                        ask1v=thisdepth["asks"][0][1]
+                        logger.info(f"""买入
+                            {bid1},{type(bid1)},bid1
+                            {bid1v},{type(bid1v)},bid1v
+                            {ask1},{type(ask1)},ask1
+                            {ask1v},{type(ask1v)},ask1v
+                            """
+                            )
+                        
+                        #【获取可用余额】
+                        # coin="USDT"
+                        # coin=""
+                        # params = {"coin":coin}
+                        # request_path="/api/v2/spot/account/assets"#现货资产余额
+                        if thisproductType=="USDT-FUTURES":
+                            logger.info(f"当前为实盘，交易抵押物为USDT")
+                            marginCoin='USDT'
+                        elif thisproductType=="SUSDT-FUTURES":
+                            logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
+                            marginCoin='SUSDT'
+                        params = {
                             "symbol":str(thissymbol),
-                            "marginCoin":marginCoin,
-                            }
-                        request_path="/api/v2/mix/position/single-position"#【单个标的的持仓信息】
-                        mixposition=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                        logger.info(f"thismixposition,{mixposition}")# [{'marginCoin': 'SUSDT','symbol': 'SBTCSUSDT','holdSide': 'long','openDelegateSize': '0','marginSize': '369.12291','available': '0.039','locked': '0','total': '0.039','leverage': '10','achievedProfits': '0','openPriceAvg': '94646.9','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '0.6396','liquidationPrice': '18801.660351978073','keepMarginRate': '0.004','markPrice': '94663.3','marginRatio': '0.01749097777','breakEvenPrice': '94760.544466680009','totalFee': '','deductedFee': '2.21473746','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735394735040','uTime': '1735394735040'},{'marginCoin': 'SUSDT','symbol': 'SETHSUSDT','holdSide': 'long','openDelegateSize': '0','marginSize': '632.92456','available': '1.88','locked': '0','total': '1.88','leverage': '10','achievedProfits': '0','openPriceAvg': '3366.62','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '0.2632','liquidationPrice': '1791.45190866726','keepMarginRate': '0.005','markPrice': '3366.76','marginRatio': '0.01749097777','breakEvenPrice': '3369.314912947769','totalFee': '','deductedFee': '1.26584912','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735394707905','uTime': '1735394708143'}]            
-                        if len(mixposition)>0:
-                            thisposition=mixposition[0]
-                            thisleverage=int(thisposition["leverage"])#杠杆倍数
-                            thisavailable=float(thisposition["available"])#可用余额【已经乘以杠杆倍数了】
-                            thisopenPriceAvg=float(thisposition["openPriceAvg"])#开仓均价
-                            if (thisavailable*thisopenPriceAvg)>trademoney*trademoneyholdrate:#另外需要考虑仓位问题，这个是一倍杠杆下的金额，实际上是多倍杠杆，因而可用扩大很多倍数
-                                droplist.append(str(thissymbol))#总仓位达到余额的一半则将该标的列为不可交易标的，不再进行开仓
-                                logger.info(f"【仓位已满】,{thissymbol},标的余额,{thisavailable}*{thisopenPriceAvg},最大持仓金额设置为,{trademoney*trademoneyholdrate},droplist,{droplist}")
-                        else:
-                            thisavailable=0
-                            logger.info(f"【没有持仓】,{thissymbol},标的余额【默认为0】,{thisavailable}")
-                    except Exception as e:
-                        logger.info(f"仓位管理报错,{e}")
-                    if(thissymbol not in droplist):#如果仓位已满则不再进行交易
-                        #【交易精度】#20次/1s (IP)
-                        # params={"symbol":thissymbol,}
-                        # request_path="/api/v2/spot/public/symbols"#现货
-                        params={"symbol":thissymbol,
                             "productType":thisproductType,
                             #【productType参数说明】
                             # USDT-FUTURES USDT专业合约
@@ -927,213 +848,136 @@ while True:#暂时只做八小时一次的，方便后期维护
                             # SUSDT-FUTURES USDT专业合约模拟盘
                             # SCOIN-FUTURES 混合合约模拟盘
                             # SUSDC-FUTURES USDC专业合约模拟盘
-                            }
-                        request_path="/api/v2/mix/market/contracts"#合约
-                        thisinfo=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                        logger.info(f"thisinfo,{thisinfo}")# [{'symbol': 'BGBUSDT','baseCoin': 'BGB','quoteCoin': 'USDT','minTradeAmount': '0','maxTradeAmount': '10000000000','takerFeeRate': '0.001','makerFeeRate': '0.001','pricePrecision': '4','quantityPrecision': '4','quotePrecision': '8','status': 'online','minTradeUSDT': '1','buyLimitPriceRatio': '0.05','sellLimitPriceRatio': '0.05','areaSymbol': 'no','orderQuantity': '200'}]
-                        # [{'symbol': 'SBTCSUSDT','baseCoin': 'SBTC','quoteCoin': 'SUSDT','buyLimitPriceRatio': '0.01','sellLimitPriceRatio': '0.01','feeRateUpRatio': '0.1','makerFeeRate': '0.0002','takerFeeRate': '0.0006','openCostUpRatio': '0.1','supportMarginCoins': ['SUSDT'],'minTradeNum': '0.001','priceEndStep': '1','volumePlace': '3','pricePlace': '1','sizeMultiplier': '0.001','symbolType': 'perpetual','minTradeUSDT': '5','maxSymbolOrderNum': '200','maxProductOrderNum': '400','maxPositionNum': '150','symbolStatus': 'normal','offTime': '-1','limitOpenTime': '-1','deliveryTime': '','deliveryStartTime': '','deliveryPeriod': '','launchTime': '','fundInterval': '8','minLever': '1','maxLever': '125','posLimit': '0.05','maintainTime': '','openTime': ''}]
-                        if len(thisinfo)>0:#对于绝大部分可交易标的都存在其详情数据的len(thisinfo)>0，如果不存在则说明该标的不可交易
-                            # #【现货】
-                            # minTradeAmount=float(thisinfo[0]["minTradeAmount"])#最小交易数量
-                            # maxTradeAmount=float(thisinfo[0]["maxTradeAmount"])#最大交易数量
-                            # quantityPrecision=int(thisinfo[0]["quantityPrecision"])#代币精度
-                            # pricePrecision=int(thisinfo[0]["pricePrecision"])#价格精度
-                            # #【合约】
-                            minTradeAmount=float(thisinfo[0]["minTradeNum"])#最小开单数量(基础币)下单的时候两者都要超过
-                            minTradeAmountUSDT=float(thisinfo[0]["minTradeUSDT"])#最小开单数量(USDT)下单的时候两者都要超过
-                            quantityPrecision=int(thisinfo[0]["volumePlace"])#数量小数位数【类似于数量精度】
-                            pricePrecision=int(thisinfo[0]["pricePlace"])#价格小数位数【类似于价格精度】
-                            sizeMultiplier=float(thisinfo[0]["sizeMultiplier"])#数量乘数【买入时不用考虑卖出时需要考虑】下单数量要大于 minTradeNum 并且满足 sizeMulti 的倍数
-                            minLever=int(thisinfo[0]["minLever"])#String最小杠杆
-                            maxLever=int(thisinfo[0]["maxLever"])#String最大杠杆
-                            if (minLever<10)and(maxLever>10):
-                                thisLever=int(10)
-                                logger.info(f"默认10倍杠杆,{thisLever}")
-                            elif (minLever<5)and(maxLever>5):
-                                thisLever=int(5)
-                                logger.info(f"默认5倍杠杆,{thisLever}")
-                            else:
-                                thisLever=minLever
-                                logger.info(f"默认最小杠杆,{thisLever}")
-                            # 持仓限制【还有一个限制条件】
-                            logger.info(f"quantityPrecision,{quantityPrecision},{type(quantityPrecision)},pricePrecision,{pricePrecision},{type(pricePrecision)}")#字符串
-                            # {'code': '00000','msg': 'success','requestTime': 1732951086595,'data': {'symbol': 'BTCUSDT_SPBL','symbolName': 'BTCUSDT','symbolDisplayName': 'BTCUSDT','baseCoin': 'BTC','baseCoinDisplayName': 'BTC','quoteCoin': 'USDT','quoteCoinDisplayName': 'USDT','minTradeAmount': '0','maxTradeAmount': '0','takerFeeRate': '0.002','makerFeeRate': '0.002','priceScale': '2','quantityScale': '6','quotePrecision': '8','status': 'online','minTradeUSDT': '1','buyLimitPriceRatio': '0.05','sellLimitPriceRatio': '0.05','maxOrderNum': '500'}}
-                            
-                            # 【盘口深度】#20次/1s (IP)
-                            # params={"symbol":str(thissymbol+"USDT"),"limit":'150',"type":'step0'}
-                            # request_path="/api/v2/spot/market/orderbook"#现货
-                            params={
-                                "productType":thisproductType,
-                                #【productType参数说明】
-                                # USDT-FUTURES USDT专业合约
-                                # COIN-FUTURES 混合合约
-                                # USDC-FUTURES USDC专业合约
-                                # SUSDT-FUTURES USDT专业合约模拟盘
-                                # SCOIN-FUTURES 混合合约模拟盘
-                                # SUSDC-FUTURES USDC专业合约模拟盘
-                                "symbol":str(thissymbol),"limit":'150',"type":'step0'}
-                            request_path="/api/v2/mix/market/orderbook"#合约
-                            thisdepth=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
-                            # logger.info(thisdepth)#【能够获取合约深度数据】
-                            bid1=thisdepth["bids"][0][0]#买一
-                            bid1v=thisdepth["bids"][0][1]
-                            ask1=thisdepth["asks"][0][0]#卖一
-                            ask1v=thisdepth["asks"][0][1]
-                            logger.info(f"""买入
-                                {bid1},{type(bid1)},bid1
-                                {bid1v},{type(bid1v)},bid1v
-                                {ask1},{type(ask1)},ask1
-                                {ask1v},{type(ask1v)},ask1v
-                                """
-                                )
-                            
-                            #【获取可用余额】
-                            # coin="USDT"
-                            # coin=""
-                            # params = {"coin":coin}
-                            # request_path="/api/v2/spot/account/assets"#现货资产余额
-                            if thisproductType=="USDT-FUTURES":
-                                logger.info(f"当前为实盘，交易抵押物为USDT")
-                                marginCoin='USDT'
-                            elif thisproductType=="SUSDT-FUTURES":
-                                logger.info(f"当前为模拟盘，交易抵押物为SUSDT")
-                                marginCoin='SUSDT'
-                            params = {
-                                "symbol":str(thissymbol),
-                                "productType":thisproductType,
-                                #【productType参数说明】
-                                # USDT-FUTURES USDT专业合约
-                                # COIN-FUTURES 混合合约
-                                # USDC-FUTURES USDC专业合约
-                                # SUSDT-FUTURES USDT专业合约模拟盘
-                                # SCOIN-FUTURES 混合合约模拟盘
-                                # SUSDC-FUTURES USDC专业合约模拟盘
-                                "marginCoin":marginCoin}
-                            request_path="/api/v2/mix/account/accounts"#合约资产余额
-                            res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
-                            logger.info(f"合约资产余额,{str(thissymbol)},{type(res)},{res}")#unrealizedPL未实现盈亏
-                            # available#账户可用数量{应该是计提损益之前的账户权益}比权益小比保证金大
-                            # accountEquity#账户权益
-                            # crossedMaxAvailable#可用全仓保证金
-                            # isolatedMaxAvailable#可用逐仓保证金
-                            #【保证金比余额更准确】保证金减去仓位应该就是当前方向的可下单余额了
-                            # mixbalance=float([re["available"] for re in res if re["marginCoin"]==marginCoin][0])#返回的数据为字符串需要提前转float
-                            # logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
-                            crossedMaxAvailablemixbalance=float([re["crossedMaxAvailable"] for re in res if re["marginCoin"]==marginCoin][0])#返回的数据为字符串需要提前转float
-                            logger.info(f"crossedMaxAvailablemixbalance,{crossedMaxAvailablemixbalance},{type(crossedMaxAvailablemixbalance)}")
+                            "marginCoin":marginCoin}
+                        request_path="/api/v2/mix/account/accounts"#合约资产余额
+                        res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
+                        logger.info(f"合约资产余额,{str(thissymbol)},{type(res)},{res}")#unrealizedPL未实现盈亏
+                        # available#账户可用数量{应该是计提损益之前的账户权益}比权益小比保证金大
+                        # accountEquity#账户权益
+                        # crossedMaxAvailable#可用全仓保证金
+                        # isolatedMaxAvailable#可用逐仓保证金
+                        #【保证金比余额更准确】保证金减去仓位应该就是当前方向的可下单余额了
+                        # mixbalance=float([re["available"] for re in res if re["marginCoin"]==marginCoin][0])#返回的数据为字符串需要提前转float
+                        # logger.info(f"mixbalance,{mixbalance},{type(mixbalance)}")
+                        crossedMaxAvailablemixbalance=float([re["crossedMaxAvailable"] for re in res if re["marginCoin"]==marginCoin][0])#返回的数据为字符串需要提前转float
+                        logger.info(f"crossedMaxAvailablemixbalance,{crossedMaxAvailablemixbalance},{type(crossedMaxAvailablemixbalance)}")
 
-                            #【根据多空方向判断下单价格】
-                            if rate>0:#【费率为正数适合做空】
-                                logger.info(f"当前开仓方向是空头")
-                                buyprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
-                                logger.info(f"buyprice,{buyprice}")
-                                thisside="sell"
-                                holdSide="short"#用于调整杠杆倍数
-                            elif rate<0:#【费率为负数适合做多】
-                                logger.info(f"当前开仓方向是多头")
-                                buyprice=round(float(bid1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
-                                logger.info(f"buyprice,{buyprice}")
-                                thisside="buy"
-                                holdSide="long"#用于调整杠杆倍数
-                                
-                            #【调整杠杆倍数】
-                            params={"symbol":thissymbol,
-                                    "marginCoin":marginCoin,
-                                    "productType":thisproductType,
-                                    "leverage":thisLever,#杠杆倍数【采用最大倍数】
-                                    "holdSide":holdSide,#持仓方向（全仓模式下不传，会忽略此参数）long：多仓；short：空仓
-                                    #【productType参数说明】
-                                    # USDT-FUTURES USDT专业合约
-                                    # COIN-FUTURES 混合合约
-                                    # USDC-FUTURES USDC专业合约
-                                    # SUSDT-FUTURES USDT专业合约模拟盘
-                                    # SCOIN-FUTURES 混合合约模拟盘
-                                    # SUSDC-FUTURES USDC专业合约模拟盘
-                                    }
-                            request_path="/api/v2/mix/account/set-leverage"#修改杠杆倍数【否则使用默认倍数】
-                            cance_order=client._request_with_params(params=params,request_path=request_path,method="POST")#【杠杆倍数调整后实际交易当中开单的杠杆倍数也跟着变化了】
-                            # 使用当前可下单数量跟最大最小下单金额【含USDT的最小下单金额】对比【如果不进行验证则计算最大开仓数量就会报错】
-                            if crossedMaxAvailablemixbalance<float(minTradeAmountUSDT/buyprice):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
-                                logger.info(f"【跳过后续任务】可下单数量小于最小下单金额USDT[{minTradeAmountUSDT}]/价格[{buyprice}]")
-                                continue
-                            if crossedMaxAvailablemixbalance<float(minTradeAmount):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
-                                logger.info(f"【跳过后续任务】可下单数量小于最小下单金额[{minTradeAmount}]")
-                                continue
-                            # 【可开仓数量】需要前面的buyprice，含义是加杠杆后买入的合约目标代币的总数量，如果是100USDT保证金，XRP/USDT的50倍合约价格为2USDT，则结果是250
-                            params = {
-                                "symbol":str(thissymbol),
-                                "productType":thisproductType,
-                                #【productType参数说明】
-                                # USDT-FUTURES USDT专业合约
-                                # COIN-FUTURES 混合合约
-                                # USDC-FUTURES USDC专业合约
-                                # SUSDT-FUTURES USDT专业合约模拟盘
-                                # SCOIN-FUTURES 混合合约模拟盘
-                                # SUSDC-FUTURES USDC专业合约模拟盘
+                        #【根据多空方向判断下单价格】
+                        if rate>0:#【费率为正数适合做空】
+                            logger.info(f"当前开仓方向是空头")
+                            buyprice=round(float(ask1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
+                            logger.info(f"buyprice,{buyprice}")
+                            thisside="sell"
+                            holdSide="short"#用于调整杠杆倍数
+                        elif rate<0:#【费率为负数适合做多】
+                            logger.info(f"当前开仓方向是多头")
+                            buyprice=round(float(bid1),pricePrecision)#卖的时候不急了在自己这边挂卖单就行
+                            logger.info(f"buyprice,{buyprice}")
+                            thisside="buy"
+                            holdSide="long"#用于调整杠杆倍数
+                            
+                        #【调整杠杆倍数】
+                        params={"symbol":thissymbol,
                                 "marginCoin":marginCoin,
-                                # "openAmount":mixbalance,#类似于总资产了
-                                "openAmount":crossedMaxAvailablemixbalance,#可进行全仓交易的保证金数量
-                                "openPrice":buyprice,#订单价格
-                                "leverage":thisLever,#杠杆倍数
+                                "productType":thisproductType,
+                                "leverage":thisLever,#杠杆倍数【采用最大倍数】
+                                "holdSide":holdSide,#持仓方向（全仓模式下不传，会忽略此参数）long：多仓；short：空仓
+                                #【productType参数说明】
+                                # USDT-FUTURES USDT专业合约
+                                # COIN-FUTURES 混合合约
+                                # USDC-FUTURES USDC专业合约
+                                # SUSDT-FUTURES USDT专业合约模拟盘
+                                # SCOIN-FUTURES 混合合约模拟盘
+                                # SUSDC-FUTURES USDC专业合约模拟盘
                                 }
-                            request_path="/api/v2/mix/account/open-count"#可开仓数量
-                            res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
-                            logger.info(f"总可开仓数量,{str(thissymbol)},{type(res)},{res}")#unrealizedPL未实现盈亏
-                            logger.info(type(res["size"]))#单独提出来避免[]在github action当中报错
-                            logger.info(res["size"])#单独提出来避免[]在github action当中报错
-                            maxvolume=float(res["size"])#最大开仓数量
-                            logger.info(f"maxvolume,{maxvolume}")
-                            # #最大下单数量=maxvolume-已经持仓的数量
-                            # maxvolume=maxvolume-thisavailable
-                            # logger.info(f"maxvolume,{maxvolume}")
+                        request_path="/api/v2/mix/account/set-leverage"#修改杠杆倍数【否则使用默认倍数】
+                        cance_order=client._request_with_params(params=params,request_path=request_path,method="POST")#【杠杆倍数调整后实际交易当中开单的杠杆倍数也跟着变化了】
+                        # 使用当前可下单数量跟最大最小下单金额【含USDT的最小下单金额】对比【如果不进行验证则计算最大开仓数量就会报错】
+                        if crossedMaxAvailablemixbalance<float(minTradeAmountUSDT/buyprice):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
+                            logger.info(f"【跳过后续任务】可下单数量小于最小下单金额USDT[{minTradeAmountUSDT}]/价格[{buyprice}]")
+                            continue
+                        if crossedMaxAvailablemixbalance<float(minTradeAmount):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
+                            logger.info(f"【跳过后续任务】可下单数量小于最小下单金额[{minTradeAmount}]")
+                            continue
+                        # 【可开仓数量】需要前面的buyprice，含义是加杠杆后买入的合约目标代币的总数量，如果是100USDT保证金，XRP/USDT的50倍合约价格为2USDT，则结果是250
+                        params = {
+                            "symbol":str(thissymbol),
+                            "productType":thisproductType,
+                            #【productType参数说明】
+                            # USDT-FUTURES USDT专业合约
+                            # COIN-FUTURES 混合合约
+                            # USDC-FUTURES USDC专业合约
+                            # SUSDT-FUTURES USDT专业合约模拟盘
+                            # SCOIN-FUTURES 混合合约模拟盘
+                            # SUSDC-FUTURES USDC专业合约模拟盘
+                            "marginCoin":marginCoin,
+                            # "openAmount":mixbalance,#类似于总资产了
+                            "openAmount":crossedMaxAvailablemixbalance,#可进行全仓交易的保证金数量
+                            "openPrice":buyprice,#订单价格
+                            "leverage":thisLever,#杠杆倍数
+                            }
+                        request_path="/api/v2/mix/account/open-count"#可开仓数量
+                        res=client._request_with_params(params=params,request_path=request_path,method="GET",)["data"]
+                        logger.info(f"总可开仓数量,{str(thissymbol)},{type(res)},{res}")#unrealizedPL未实现盈亏
+                        logger.info(type(res["size"]))#单独提出来避免[]在github action当中报错
+                        logger.info(res["size"])#单独提出来避免[]在github action当中报错
+                        maxvolume=float(res["size"])#最大开仓数量
+                        logger.info(f"maxvolume,{maxvolume}")
+                        # #最大下单数量=maxvolume-已经持仓的数量
+                        # maxvolume=maxvolume-thisavailable
+                        # logger.info(f"maxvolume,{maxvolume}")
 
-                            #【根据可下单数量计算可下单金额与单笔最大金额对比控制单笔下单金额】
-                            maxmoney=maxvolume*buyprice
-                            #计算下单数量【这里不一定是对的，有时候比可开金额要大】
-                            if maxmoney>trademoney*traderate:#当maxmoney大于trademoney的时候按照trademoney
-                                buymoney=trademoney#这里在实盘显示的0，也就是目标下单
-                                logger.info(f"trademoney,{trademoney}")
-                            else:#当maxmoney小于等于于trademoney的时候按照maxmoney
-                                buymoney=maxmoney
-                                logger.info(f"maxmoney,{maxmoney}")
-                            logger.info(f"buymoney,{buymoney}")
-                            # 金额/价格=数量，这里不需要对杠杆进行处理即可获得实际数量
-                            buyvolume=(((buymoney/buyprice))//(sizeMultiplier))*(sizeMultiplier)#【数量上可能需要再次乘以杠杆】计算了应下单数量后还需要根据数量乘数去掉余数
-                            logger.info(f"buyvolume,{buyvolume}")
-                            if buyvolume>maxvolume:
-                                logger.info(f"拟下单金额大于最大可下单数量进行调整")
-                                buyvolume=maxvolume
-                            else:
-                                logger.info(f"拟下单金额不大于最大可下单数量无需进行调整")
-                            logger.info(f"buyvolume,{buyvolume}")
-                            #【因为下单精度问题很多零碎的代币都没卖掉】
-                            buyvolume=round(math.floor(float(buyvolume)*(10**quantityPrecision))/(10**quantityPrecision),
-                                            quantityPrecision)#为防止余额不足需要先乘后除再取位数
-                            logger.info(f"{thissymbol},buyvolume,{buyvolume},{type(buyvolume)}")
-                                           
-                            # 目标下单金额跟最大最小下单金额【含USDT的最小下单金额】对比
-                            if buyvolume<float(minTradeAmountUSDT/buyprice):#这个buyvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
-                                logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额USDT[{minTradeAmountUSDT}]/[{buyprice}]")
-                                continue
-                            else:
-                                logger.info(f"【目标下单金额正常】大于最小下单金额USDT[{minTradeAmountUSDT}]/[{sellprice}]")
-                            if buyvolume<float(minTradeAmount):
-                                logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额[{minTradeAmount}]")
-                                continue
-                            else:
-                                logger.info(f"【目标下单金额正常】大于最小下单金额[{minTradeAmount}]")
+                        #【根据可下单数量计算可下单金额与单笔最大金额对比控制单笔下单金额】
+                        maxmoney=maxvolume*buyprice
+                        #计算下单数量【这里不一定是对的，有时候比可开金额要大】
+                        if maxmoney>trademoney*traderate:#当maxmoney大于trademoney的时候按照trademoney
+                            buymoney=trademoney#这里在实盘显示的0，也就是目标下单
+                            logger.info(f"trademoney,{trademoney}")
+                        else:#当maxmoney小于等于于trademoney的时候按照maxmoney
+                            buymoney=maxmoney
+                            logger.info(f"maxmoney,{maxmoney}")
+                        logger.info(f"buymoney,{buymoney}")
+                        # 金额/价格=数量，这里不需要对杠杆进行处理即可获得实际数量
+                        buyvolume=(((buymoney/buyprice))//(sizeMultiplier))*(sizeMultiplier)#【数量上可能需要再次乘以杠杆】计算了应下单数量后还需要根据数量乘数去掉余数
+                        logger.info(f"buyvolume,{buyvolume}")
+                        if buyvolume>maxvolume:
+                            logger.info(f"拟下单金额大于最大可下单数量进行调整")
+                            buyvolume=maxvolume
+                        else:
+                            logger.info(f"拟下单金额不大于最大可下单数量无需进行调整")
+                        logger.info(f"buyvolume,{buyvolume}")
+                        #【因为下单精度问题很多零碎的代币都没卖掉】
+                        buyvolume=round(math.floor(float(buyvolume)*(10**quantityPrecision))/(10**quantityPrecision),
+                                        quantityPrecision)#为防止余额不足需要先乘后除再取位数
+                        logger.info(f"{thissymbol},buyvolume,{buyvolume},{type(buyvolume)}")
+                                        
+                        # 目标下单金额跟最大最小下单金额【含USDT的最小下单金额】对比
+                        if buyvolume<float(minTradeAmountUSDT/buyprice):#这个buyvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
+                            logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额USDT[{minTradeAmountUSDT}]/[{buyprice}]")
+                            continue
+                        else:
+                            logger.info(f"【目标下单金额正常】大于最小下单金额USDT[{minTradeAmountUSDT}]/[{buyprice}]")
+                        if buyvolume<float(minTradeAmount):
+                            logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额[{minTradeAmount}]")
+                            continue
+                        else:
+                            logger.info(f"【目标下单金额正常】大于最小下单金额[{minTradeAmount}]")
 
-                            # 【再次验证时间，只在合理时间内下单】
-                            thisnow=(datetime.datetime.utcnow()+datetime.timedelta(hours=8)).time()
-                            logger.info(f"thisnow,{thisnow}")
-                            if (#在特定时间内才执行交易任务【最后3秒不交易，2秒撤单一般能够避免结算后交易的问题】后面看情况再去更改时间
-                                ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(7,59,57)))
-                                or
-                                ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(15,59,57)))
-                                or
-                                ((thisnow>datetime.time(23,58))and(thisnow<datetime.time(23,59,57)))
-                            ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
-                            # if True:#【测试】
+                        # 【再次验证时间，只在合理时间内下单】
+                        thisnow=(datetime.datetime.utcnow()+datetime.timedelta(hours=8)).time()
+                        logger.info(f"thisnow,{thisnow}")
+                        if (#在特定时间内才执行交易任务【最后3秒不交易，2秒撤单一般能够避免结算后交易的问题】后面看情况再去更改时间
+                            ((thisnow>datetime.time(7,58))and(thisnow<datetime.time(7,59,57)))
+                            or
+                            ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(15,59,57)))
+                            or
+                            ((thisnow>datetime.time(23,58
+                        
+                        
+                        ))and(thisnow<datetime.time(23,59,57)))
+                        ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
+                        # if True:#【测试】
+                            try:
                                 # {'marginCoin': 'SUSDT','symbol': 'SEOSSUSDT','holdSide': 'short','openDelegateSize': '0','marginSize': '167.5439','available': '2071','locked': '0','total': '2071','leverage': '10','achievedProfits': '0','openPriceAvg': '0.809','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '-3.7278','liquidationPrice': '2.244419487762','keepMarginRate': '0.01','markPrice': '0.8108','marginRatio': '0.023008182661','breakEvenPrice': '0.80802978213','totalFee': '','deductedFee': '1.0052634','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735460075396','uTime': '1735460075396'}
                                 # #【合约下单】# 开多规则为：side=buy,tradeSide=open；开空规则为：side=sell,tradeSide=open；平多规则为：side=buy,tradeSide=close；平空规则为：side=sell,tradeSide=close
                                 if thisproductType=="USDT-FUTURES":
@@ -1174,7 +1018,10 @@ while True:#暂时只做八小时一次的，方便后期维护
                                 #最小下单金额为1USDT
                                 thisorder=client._request_with_params(params=params,request_path=request_path,method="POST")
                                 logger.info(f"thisorder,{thisorder}")#如果执行了下单这里返回一个order详情{包含下单是否成功的返回值}
-
+                            except Exception as e:
+                                logger.info(f"执行下单报错{e}")#这里偶尔会报错，估计是下单完没更新出来最新余额或者是仓位变动导致可开仓余额变化进而导致了实际可下单余额不足
+                        else:
+                            logger.info(f"未到开仓时间")
     #【超时撤单模块】
     try:#真正的交易机会就很短时间休息久了容易错过机会
         #【休息】避免速度过快限制IP
@@ -1250,3 +1097,150 @@ while True:#暂时只做八小时一次的，方便后期维护
                     logger.info(f"订单挂起时间未达到超时撤单标准")
     except Exception as e:
         logger.info(f"超时撤单报错,{e}")
+
+
+
+# #【获取公告数据】
+# # annType	String	否	公告类型
+# # latest_news: 最新活动
+# # coin_listings: 新币上线
+# # trading_competitions_promotions: 交易比赛和活动
+# # maintenance_system_updates: 维护/系统升级
+# # symbol_delisting: 下架资讯
+# # startTime	String	否	查询的开始时间，Unix毫秒时间戳，例如1690196141868
+# # 按照对外展示时间查询
+# # endTime	String	否	查询的结束时间，Unix毫秒时间戳，例如1690196141868
+# # 按照对外展示时间查询
+# # language	String	是	语言类型
+# # zh_CN中文
+# # en_US英文
+# # 如果传入的语言类型不支持，则返回英文
+# params={"language":'zh_CN'}
+# request_path="/api/v2/public/annoucements"
+# df=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]#quantityScale可能是精度
+# df=pd.DataFrame(df)
+# logger.info(df)
+# df.to_csv("bitget公告.csv")
+
+
+
+# #【获取coin信息】
+# request_path="/api/v2/spot/public/coins"
+# params={}
+# bitget_coins_info=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
+# bitget_coins_info=pd.DataFrame(bitget_coins_info)
+# alldf=pd.DataFrame({})
+# for index,thiinfo in bitget_coins_info.iterrows():
+#     # logger.info(index,thiinfo)
+#     thiscoin=thiinfo["coin"]
+#     thistransfer=thiinfo["transfer"]
+#     thisdf=pd.DataFrame(thiinfo["chains"])
+#     thisdf["coin"]=thiscoin
+#     thisdf["transfer"]=thistransfer
+#     # logger.info(thisdf)
+#     alldf=pd.concat([alldf,thisdf])
+# alldf=alldf.rename(columns={
+#     # "coin":"base",
+#     "transfer":"是否可以划转",
+#     "chain":"链名称",#	Array	
+#     "needTag":"是否需要tag",#Boolean	
+#     "withdrawable":"是否可提现",
+#     "rechargeable":"是否可充值",
+#     "withdrawFee":"提现手续费",
+#     "extraWithdrawFee":"链上转账销毁",#额外收取,链上转账销毁，0.1表示10%
+#     "depositConfirm":"充值确认块数",
+#     "withdrawConfirm":"提现确认块数",
+#     "minDepositAmount":"最小充值数",
+#     "minWithdrawAmount":"最小提现数",
+#     "browserUrl":"区块浏览器地址",
+#     "contractAddress":"币种合约地址",
+#     "withdrawStep":"提币步长",
+#         # 非0，代表提币数量需满足步长倍数
+#         # 为0，代表没有步长倍数的限制
+#     "withdrawMinScale":"提币数量精度",
+#     "congestion":"链网络拥堵情况",
+#         # "normal": 正常
+#         # "congested": 拥堵
+#     # 返回字段	参数类型	字段说明
+#     # coinId	String	币种ID
+#     # coin	String	币种名称
+#     # transfer	Boolean	是否可以划转
+#     # chains	Array	支持的链列表
+#     # > chain	String	链名称
+#     # > needTag	Boolean	是否需要tag
+#     # > withdrawable	Boolean	是否可提现
+#     # > rechargeable	Boolean	是否可充值
+#     # > withdrawFee	String	提现手续费
+#     # > extraWithdrawFee	String	额外收取,链上转账销毁，0.1表示10%
+#     # > depositConfirm	String	充值确认块数
+#     # > withdrawConfirm	String	提现确认块数
+#     # > minDepositAmount	String	最小充值数
+#     # > minWithdrawAmount	String	最小提现数
+#     # > browserUrl	String	区块浏览器地址
+#     # > contractAddress	String	币种合约地址
+#     # > withdrawStep	String	提币步长
+#     # 非0，代表提币数量需满足步长倍数
+#     # 为0，代表没有步长倍数的限制
+#     # > withdrawMinScale	String	提币数量精度
+#     # > congestion	String	链网络拥堵情况
+#     # normal: 正常
+#     # congested: 拥堵
+#     })
+# logger.info(alldf,type(alldf))
+# alldf.to_csv("bitget币种信息symbol.csv")
+
+
+
+# #【获取symbol详情】这个不需要详情因为不参与交易
+# request_path="/api/v2/spot/public/symbols"
+# params={}
+# bitget_symbols_info=client._request_with_params(params=params,request_path=request_path,method="GET")["data"]
+# bitget_symbols_info=pd.DataFrame(bitget_symbols_info)
+# # #获取交易对信息
+# # url="https://api.bitget.com/api/v2/spot/public/symbols"
+# # bitget_symbols_info=pd.DataFrame(requests.get(url).json()["data"])
+# bitget_symbols_info=bitget_symbols_info.rename(columns={
+#     # symbol:交易对名称
+#     "baseCoin":"基础币",#如交易对"BTCUSDT"中的"BTC"
+#     "quoteCoin":"计价货币",#例如交易对"BTCUSDT"中的"USDT"
+#     "minTradeAmount":"最小交易数量",
+#     "maxTradeAmount":"最大交易数量",
+#     "takerFeeRate":"默认吃单手续费率",#可被个人交易手续费率覆盖
+#     "makerFeeRate":"默认挂单手续费率",#可被个人交易手续费率覆盖
+#     "pricePrecision":"价格精度",
+#     "quantityPrecision":"数量精度",
+#     "quotePrecision":"右币精度",
+#     "minTradeUSDT":"最小USDT交易额",
+#     "status":"上架状态",
+#         # offline: 维护
+#         # gray: 灰度
+#         # online: 上线
+#         # halt: 停盘
+#     "buyLimitPriceRatio":"买入与现价的价差百分比",#小数形式    如 0.05 表示: 5%
+#     "sellLimitPriceRatio":"卖出与现价的价差百分比",#小数形式    如 0.05 表示: 5%
+#     # 返回字段	参数类型	字段说明
+#     # symbol	String	交易对名称
+#     # baseCoin	String	基础币，如交易对"BTCUSDT"中的"BTC"
+#     # quoteCoin	String	计价货币，例如交易对"BTCUSDT"中的"USDT"
+#     # minTradeAmount	String	最小交易数量
+#     # maxTradeAmount	String	最大交易数量
+#     # takerFeeRate	String	默认吃单手续费率，可被个人交易手续费率覆盖
+#     # makerFeeRate	String	默认挂单手续费率，可被个人交易手续费率覆盖
+#     # pricePrecision	String	价格精度
+#     # quantityPrecision	String	数量精度
+#     # quotePrecision	String	右币精度
+#     # minTradeUSDT	String	最小USDT交易额
+#     # status	String	上架状态
+#     # offline: 维护
+#     # gray: 灰度
+#     # online: 上线
+#     # halt: 停盘
+#     # buyLimitPriceRatio	String	买入与现价的价差百分比,小数形式
+#     # 如 0.05 表示: 5%
+#     # sellLimitPriceRatio	String	卖出与现价的价差百分比,小数形式
+#     # 如 0.05 表示: 5%
+# })
+# bitget_symbols_info["coin"]=bitget_symbols_info["symbol"].str.replace("USDT","").replace("USDC","")
+# # alldf=bitget_symbols_info.merge(alldf,on="coin")
+# logger.info(bitget_symbols_info)
+# bitget_symbols_info.to_csv("bitget交易对信息.csv")
