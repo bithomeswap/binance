@@ -493,15 +493,15 @@ while True:#暂时只做八小时一次的，方便后期维护
 
                         # 目标下单金额跟最大最小下单金额【含USDT的最小下单金额】对比
                         if sellvolume<float(minTradeAmountUSDT/sellprice):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
-                            logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额USDT，重置为最小下单金额USDT")
+                            logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额USDT[{minTradeAmountUSDT}]/[{sellprice}]")
                             continue
                         else:
-                            logger.info(f"目标下单金额正常【大于最小下单金额USDT】")
+                            logger.info(f"【目标下单金额正常】大于最小下单金额USDT[{minTradeAmountUSDT}]/[{sellprice}]")
                         if sellvolume<float(minTradeAmount):
-                            logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额，重置为最小下单金额")
+                            logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额[{minTradeAmount}]")
                             continue
                         else:
-                            logger.info(f"目标下单金额正常【大于最小下单金额】")
+                            logger.info(f"【目标下单金额正常】大于最小下单金额[{minTradeAmount}]")
 
                         # {'marginCoin': 'SUSDT','symbol': 'SEOSSUSDT','holdSide': 'short','openDelegateSize': '0','marginSize': '167.5439','available': '2071','locked': '0','total': '2071','leverage': '10','achievedProfits': '0','openPriceAvg': '0.809','marginMode': 'crossed','posMode': 'hedge_mode','unrealizedPL': '-3.7278','liquidationPrice': '2.244419487762','keepMarginRate': '0.01','markPrice': '0.8108','marginRatio': '0.023008182661','breakEvenPrice': '0.80802978213','totalFee': '','deductedFee': '1.0052634','grant': '','assetMode': 'single','autoMargin': 'off','takeProfit': '','stopLoss': '','takeProfitId': '','stopLossId': '','cTime': '1735460075396','uTime': '1735460075396'}
                         # #【合约下单】# 开多规则为：side=buy,tradeSide=open；开空规则为：side=sell,tradeSide=open；平多规则为：side=buy,tradeSide=close；平空规则为：side=sell,tradeSide=close
@@ -908,7 +908,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                             thisopenPriceAvg=float(thisposition["openPriceAvg"])#开仓均价
                             if (thisavailable*thisopenPriceAvg)>trademoney*trademoneyholdrate:#另外需要考虑仓位问题，这个是一倍杠杆下的金额，实际上是多倍杠杆，因而可用扩大很多倍数
                                 droplist.append(str(thissymbol))#总仓位达到余额的一半则将该标的列为不可交易标的，不再进行开仓
-                            logger.info(f"【仓位已满】,{thissymbol},标的余额,{thisavailable}*{thisopenPriceAvg},最大持仓金额设置为,{trademoney*trademoneyholdrate},droplist,{droplist}")
+                                logger.info(f"【仓位已满】,{thissymbol},标的余额,{thisavailable}*{thisopenPriceAvg},最大持仓金额设置为,{trademoney*trademoneyholdrate},droplist,{droplist}")
                         else:
                             thisavailable=0
                             logger.info(f"【没有持仓】,{thissymbol},标的余额【默认为0】,{thisavailable}")
@@ -1052,7 +1052,13 @@ while True:#暂时只做八小时一次的，方便后期维护
                                     }
                             request_path="/api/v2/mix/account/set-leverage"#修改杠杆倍数【否则使用默认倍数】
                             cance_order=client._request_with_params(params=params,request_path=request_path,method="POST")#【杠杆倍数调整后实际交易当中开单的杠杆倍数也跟着变化了】
-
+                            # 使用当前可下单数量跟最大最小下单金额【含USDT的最小下单金额】对比【如果不进行验证则计算最大开仓数量就会报错】
+                            if crossedMaxAvailablemixbalance<float(minTradeAmountUSDT/buyprice):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
+                                logger.info(f"【跳过后续任务】可下单数量小于最小下单金额USDT[{minTradeAmountUSDT}]/价格[{buyprice}]")
+                                continue
+                            if crossedMaxAvailablemixbalance<float(minTradeAmount):#这个sellvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
+                                logger.info(f"【跳过后续任务】可下单数量小于最小下单金额[{minTradeAmount}]")
+                                continue
                             # 【可开仓数量】需要前面的buyprice，含义是加杠杆后买入的合约目标代币的总数量，如果是100USDT保证金，XRP/USDT的50倍合约价格为2USDT，则结果是250
                             params = {
                                 "symbol":str(thissymbol),
@@ -1107,15 +1113,15 @@ while True:#暂时只做八小时一次的，方便后期维护
                                            
                             # 目标下单金额跟最大最小下单金额【含USDT的最小下单金额】对比
                             if buyvolume<float(minTradeAmountUSDT/buyprice):#这个buyvolume是原始代币的数量，所以后面的float应该是这个USDT/代币本身
-                                logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额USDT，重置为最小下单金额USDT")
+                                logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额USDT[{minTradeAmountUSDT}]/[{buyprice}]")
                                 continue
                             else:
-                                logger.info(f"目标下单金额正常【大于最小下单金额USDT】")
+                                logger.info(f"【目标下单金额正常】大于最小下单金额USDT[{minTradeAmountUSDT}]/[{sellprice}]")
                             if buyvolume<float(minTradeAmount):
-                                logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额，重置为最小下单金额")
+                                logger.info(f"【跳过后续任务】目标下单金额小于最小下单金额[{minTradeAmount}]")
                                 continue
                             else:
-                                logger.info(f"目标下单金额正常【大于最小下单金额】")
+                                logger.info(f"【目标下单金额正常】大于最小下单金额[{minTradeAmount}]")
 
                             # 【再次验证时间，只在合理时间内下单】
                             thisnow=(datetime.datetime.utcnow()+datetime.timedelta(hours=8)).time()
