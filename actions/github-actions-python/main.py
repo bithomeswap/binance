@@ -220,15 +220,13 @@ while True:#暂时只做八小时一次的，方便后期维护
     thisnow=(datetime.datetime.utcnow()+datetime.timedelta(hours=8)).time()#获取标准时间，换算成东八区
     #thisnow=datetime.datetime.now().time()#直接获取东八区时间（同花顺使用的就是使用的东八区的上海时间，但是怕他换服务器）
     logger.info(f"当前小时分钟数,{str(thisnow)},如果卡在这里了说明没到交易时间或者时区不对")
-    if (
-        ((thisnow>datetime.time(8,00))and(thisnow<datetime.time(15,50)))
+    if (#【延迟30秒再清仓避免没拿到资金费率】
+        ((thisnow>datetime.time(8,00,30))and(thisnow<datetime.time(15,50)))
         or
-        ((thisnow>datetime.time(16,00))and(thisnow<datetime.time(23,50)))
+        ((thisnow>datetime.time(16,00,30))and(thisnow<datetime.time(23,50)))
         or
-        ((thisnow>datetime.time(0,00))and(thisnow<datetime.time(7,50)))
+        ((thisnow>datetime.time(0,00,30))and(thisnow<datetime.time(7,50)))
     ):#【在这三个时间段直接清仓USDT存理财】
-    # if True:#【测试平仓】
-    # if False:#【测试开仓】
         # try:
             try:
                 droplist=[]#仓位过重不再执行开仓的标的【重置】
@@ -971,10 +969,7 @@ while True:#暂时只做八小时一次的，方便后期维护
                             or
                             ((thisnow>datetime.time(15,58))and(thisnow<datetime.time(15,59,57)))
                             or
-                            ((thisnow>datetime.time(23,58
-                        
-                        
-                        ))and(thisnow<datetime.time(23,59,57)))
+                            ((thisnow>datetime.time(23,58))and(thisnow<datetime.time(23,59,57)))
                         ):#这个阶段持续按照对应金额买入对应高资金费率的衍生品合约，并且在这个阶段结束后预计下单金额直接重置为空
                         # if True:#【测试】
                             try:
